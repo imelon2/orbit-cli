@@ -3,14 +3,6 @@ providers:
     ethereum: http://localhost:8545
     arbitrum: http://localhost:8547
     orbit: http://localhost:3347
-  sepolia:
-    ethereum:
-    arbitrum:
-    orbit: 
-  mainnet:
-    ethereum: 
-    arbitrum: 
-    orbit: 
 wallets:
   0x10012d9d7365bd937d5c28f786045d7c93edc7ec
   0x07141f015ef4dd2077951af88203d9c6fb470bb3

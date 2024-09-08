@@ -14,7 +14,7 @@ clean :
 	yarn --cwd token-bridge-contracts build
 	@touch $@
 	
-.make/solgen: $(DEP_PREDICATE) solgen/gen.go .make/solidity .make
+.make/solgen: solgen/gen.go .make/solidity .make
 	mkdir -p solgen/go
 	mkdir -p solgen/abi
 	go run solgen/gen.go

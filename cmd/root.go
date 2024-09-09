@@ -6,6 +6,7 @@ package cmd
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	account "github.com/imelon2/orbit-toolkit/cmd/account"
@@ -75,6 +76,10 @@ func init() {
 	// rootCmd.Flags().UintP("name", "n", 0, "Help message for name")
 
 	// Viper 설정 초기화
+	_, filename, _, _ := runtime.Caller(0)
+	parsent := utils.GetParentRootDir(filename)
+
+	cfgFile = filepath.Join(parsent, "config.yml")
 	cobra.OnInitialize(func() {
 		if cfgFile != "" {
 			viper.SetConfigFile(cfgFile)

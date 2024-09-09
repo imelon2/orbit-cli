@@ -10,6 +10,12 @@ func GetRootDir(filename string) string {
 	return root
 }
 
+func GetParentRootDir(filename string) string {
+	root := filepath.Dir(filename)
+	parent := filepath.Dir(root)
+	return parent
+}
+
 func GetAbiDir() string {
 	_, filename, _, _ := runtime.Caller(0)
 	root := filepath.Dir(filename)

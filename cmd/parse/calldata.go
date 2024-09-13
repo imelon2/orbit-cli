@@ -63,7 +63,7 @@ var CalldataCmd = &cobra.Command{
 
 		jsonCalldata := make(map[string]interface{})
 		for i, data := range inter {
-			jsonCalldata[method.Inputs[i].Name] = data
+			jsonCalldata[method.Inputs[i].Name] = utils.ConvertBytesToHex(data)
 		}
 
 		jsonData, err := json.MarshalIndent(jsonCalldata, "", "  ")

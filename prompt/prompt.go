@@ -156,8 +156,8 @@ func SelectCommand(dirPath string) (string, error) {
 
 func EnterTransactionHash() (common.Hash, error) {
 	validate := func(input string) error {
-		isAddress := utils.IsTransaction(input)
-		if !isAddress {
+		isTransaction := utils.IsTransaction(input)
+		if !isTransaction {
 			return errors.New("Invalid transaction hash")
 		}
 		return nil
@@ -174,4 +174,30 @@ func EnterTransactionHash() (common.Hash, error) {
 	}
 
 	return common.HexToHash(selected), nil
+}
+
+func EnterTransactionHashOrBytes() (string, error) {
+	validate := func(input string) error {
+		fmt.Print("is?")
+		fmt.Print("\n")
+		isTransaction := utils.IsTransaction(input)
+		if isTransaction || len(input) >= 10 {
+			return nil
+		} else {
+			return errors.New("Invalid transaction hash")
+		}
+	}
+
+	promptPrompt := promptui.Prompt{
+		Label:     "Enter the transaction hash or calldata",
+		Validate:  validate,
+		IsVimMode: false,
+	}
+
+	selected, err := promptPrompt.Run()
+	if err != nil {
+		return "", fmt.Errorf("EnterTransactionHash Prompt failed %v\n", err)
+	}
+
+	return selected, nil
 }

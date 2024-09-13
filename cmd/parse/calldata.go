@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/imelon2/orbit-toolkit/prompt"
 	"github.com/imelon2/orbit-toolkit/utils"
 	"github.com/spf13/cobra"
@@ -36,19 +38,30 @@ var CalldataCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		txHash, err := prompt.EnterTransactionHash()
+		txHashOrCalldata, err := prompt.EnterTransactionHashOrBytes()
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		client := utils.GetClient(provider)
-		tx, _, err := client.TransactionByHash(context.Background(), txHash)
 
-		if err != nil {
-			log.Fatal(err)
+		var data []byte
+		if utils.IsTransaction(txHashOrCalldata) {
+			tx, _, err := client.TransactionByHash(context.Background(), common.HexToHash(txHashOrCalldata))
+			if err != nil {
+				log.Fatal(err)
+			}
+			data = tx.Data()
+		} else {
+			txHashOrCalldata = txHashOrCalldata[2:]
+
+			// hex 문자열을 []byte로 변환
+			calldataBytes, err := hex.DecodeString(txHashOrCalldata)
+			if err != nil {
+				log.Fatalf("calldata 변환 에러: %v", err)
+			}
+			data = calldataBytes
 		}
-
-		data := tx.Data()
 
 		method, err := parsedABI.MethodById(data[:4] /* function selector */)
 		if err != nil {

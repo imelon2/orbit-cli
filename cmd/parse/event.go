@@ -31,13 +31,15 @@ var EventCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to get provider: %v", err)
 		}
-		hash, err := prompt.EnterTransactionHash()
+		txHash, err := prompt.EnterTransactionHash()
 		if err != nil {
-			log.Fatalf("Failed to get hash: %v", err)
+			log.Fatalf("Failed to get txHash: %v", err)
 		}
 
 		client := utils.GetClient(provider)
 		tx, err := client.TransactionReceipt(context.Background(), txHash)
+
+		tx.Logs
 	},
 }
 

@@ -8,3 +8,6 @@
 [submodule "token-bridge-contracts"]
 	path = token-bridge-contracts
 	url = https://github.com/OffchainLabs/token-bridge-contracts.git
+[submodule "promptui"]
+	path = promptui
+	url = https://github.com/shaneharter/promptui.git

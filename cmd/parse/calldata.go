@@ -14,15 +14,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/imelon2/orbit-toolkit/prompt"
-	"github.com/imelon2/orbit-toolkit/utils"
+	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
 // calldataCmd represents the calldata command
 var CalldataCmd = &cobra.Command{
 	Use:   "calldata",
-	Short: "A brief description of your command",
+	Short: "Parse calldata by transaction hash or bytes",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		abiPath := utils.GetAbiDir()
@@ -37,11 +37,7 @@ var CalldataCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		txHashOrCalldata, err := prompt.EnterTransactionHashOrBytes()
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		client := utils.GetClient(provider)
 
@@ -84,7 +80,8 @@ var CalldataCmd = &cobra.Command{
 			log.Fatalf("Failed to MarshalIndent calldata: %v", err)
 		}
 		fmt.Printf("Function : %s\n", parsedABI.Methods[method.Name])
-		fmt.Println(string(jsonData))
+		fmt.Printf("Calldata Length : %d\n\n", len(data))
+		fmt.Fprintln(os.Stdout, string(jsonData))
 	},
 }
 

@@ -7,11 +7,16 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/imelon2/orbit-toolkit/utils"
-	"github.com/manifoldco/promptui"
+	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/viper"
 )
+
+type ProviderUrl struct {
+	Name string
+	Url  string
+}
 
 var LAST_WALLET_STRING = "Enter"
 var LAST_PROVIDER_STRING = "Enter Provider URL"
@@ -19,13 +24,14 @@ var LAST_PROVIDER_STRING = "Enter Provider URL"
 func SelectWallet() (string, error) {
 	wallets := viper.GetStringSlice("wallets")
 	wallets = append(wallets, LAST_WALLET_STRING)
-	promptSelect := promptui.Select{
-		Label: "Select Wallet",
-		Items: wallets,
+
+	var qs = &survey.Select{
+		Message: "Select Wallet: ",
+		Options: wallets,
 	}
 
-	_, selected, err := promptSelect.Run()
-
+	var selected string
+	err := survey.AskOne(qs, &selected)
 	if err != nil {
 		return "", fmt.Errorf("Prompt failed %v\n", err)
 	}
@@ -33,20 +39,24 @@ func SelectWallet() (string, error) {
 	selectedWallet := selected
 
 	if selected == LAST_WALLET_STRING {
-		validate := func(input string) error {
-			isAddress := utils.IsAddress(input)
-			if !isAddress {
-				return errors.New("Invalid Address")
-			}
-			return nil
+
+		var validationQs = []*survey.Question{
+			{
+				Name:   "Hash",
+				Prompt: &survey.Input{Message: "Enter the transaction hash: "},
+				Validate: func(val interface{}) error {
+					// if the input matches the expectation
+					if str := val.(string); !utils.IsAddress(str) {
+						return errors.New("Invalid Address")
+					}
+					// nothing was wrong
+					return nil
+				},
+			},
 		}
 
-		promptPrompt := promptui.Prompt{
-			Label:    "Enter the wallet address",
-			Validate: validate,
-		}
-
-		selected, err := promptPrompt.Run()
+		var selected string
+		err := survey.Ask(validationQs, &selected)
 		if err != nil {
 			return "", fmt.Errorf("Prompt failed %v\n", err)
 		}
@@ -54,68 +64,6 @@ func SelectWallet() (string, error) {
 	}
 
 	return selectedWallet, nil
-}
-
-func SelectProvider() (string, error) {
-	var _chains []string
-	var selectedProvider string
-	var selectedChain string
-
-	chains := viper.GetStringMap("providers")
-	for key, _ := range chains {
-		_chains = append(_chains, key)
-	}
-	_chains = append(_chains, LAST_PROVIDER_STRING)
-
-	promptSelectChain := promptui.Select{
-		Label: "Select Chain",
-		Items: _chains,
-	}
-
-	_, selectedChain, err := promptSelectChain.Run()
-	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v\n", err)
-	}
-	if selectedChain == LAST_PROVIDER_STRING {
-		validate := func(input string) error {
-			return nil
-		}
-
-		promptPrompt := promptui.Prompt{
-			Label:    "Enter the Provider URL",
-			Validate: validate,
-		}
-
-		selected, err := promptPrompt.Run()
-		if err != nil {
-			return "", fmt.Errorf("Prompt failed %v\n", err)
-		}
-		selectedProvider = selected
-	} else {
-		providers := viper.GetStringMapString("providers." + selectedChain)
-		var _providers []string
-		for key := range providers {
-			_providers = append(_providers, key)
-		}
-
-		promptSelectProvider := promptui.Select{
-			Label: "Select Provider",
-			Items: _providers,
-		}
-
-		_, selectedProviderName, err := promptSelectProvider.Run()
-		if err != nil {
-			return "", fmt.Errorf("Prompt failed %v\n", err)
-		}
-		selectedProvider = providers[selectedProviderName]
-
-		if selectedProvider == "" {
-			errM := selectedChain + "-" + selectedProviderName + " Chain No Provider"
-			log.Fatal(errM)
-		}
-	}
-
-	return selectedProvider, nil
 }
 
 func SelectCommand(dirPath string) (string, error) {
@@ -141,34 +89,39 @@ func SelectCommand(dirPath string) (string, error) {
 		}
 	}
 
-	promptSelect := promptui.Select{
-		Label: "Select Command",
-		Items: directories,
+	var qs = &survey.Select{
+		Message: "Select Command: ",
+		Options: directories,
 	}
 
-	_, selected, err := promptSelect.Run()
+	var selected string
+	err = survey.AskOne(qs, &selected)
+
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Prompt failed %v\n", err)
 	}
 
 	return selected, nil
 }
 
 func EnterTransactionHash() (common.Hash, error) {
-	validate := func(input string) error {
-		isTransaction := utils.IsTransaction(input)
-		if !isTransaction {
-			return errors.New("Invalid transaction hash")
-		}
-		return nil
-	}
 
-	promptPrompt := promptui.Prompt{
-		Label:    "Enter the transaction hash",
-		Validate: validate,
+	var validationQs = []*survey.Question{
+		{
+			Name:   "Hash",
+			Prompt: &survey.Input{Message: "Enter the transaction hash: "},
+			Validate: func(val interface{}) error {
+				// if the input matches the expectation
+				if str := val.(string); !utils.IsTransaction(str) {
+					return errors.New("Invalid transaction hash")
+				}
+				// nothing was wrong
+				return nil
+			},
+		},
 	}
-
-	selected, err := promptPrompt.Run()
+	var selected string
+	err := survey.Ask(validationQs, &selected)
 	if err != nil {
 		return common.HexToHash(""), fmt.Errorf("EnterTransactionHash Prompt failed %v\n", err)
 	}
@@ -177,27 +130,90 @@ func EnterTransactionHash() (common.Hash, error) {
 }
 
 func EnterTransactionHashOrBytes() (string, error) {
-	validate := func(input string) error {
-		fmt.Print("is?")
-		fmt.Print("\n")
-		isTransaction := utils.IsTransaction(input)
-		if isTransaction || len(input) >= 10 {
-			return nil
-		} else {
-			return errors.New("Invalid transaction hash")
-		}
+	var validationQs = []*survey.Question{
+		{
+			Name:   "HashOrBytes",
+			Prompt: &survey.Input{Message: "Enter the transaction hash or calldata: "},
+			Validate: func(val interface{}) error {
+				// if the input matches the expectation
+				if str := val.(string); len(str) < 10 {
+					return errors.New("Invalid transaction hash")
+				}
+				// nothing was wrong
+				return nil
+			},
+		},
 	}
+	var selected string
+	err := survey.Ask(validationQs, &selected)
 
-	promptPrompt := promptui.Prompt{
-		Label:     "Enter the transaction hash or calldata",
-		Validate:  validate,
-		IsVimMode: false,
-	}
-
-	selected, err := promptPrompt.Run()
 	if err != nil {
 		return "", fmt.Errorf("EnterTransactionHash Prompt failed %v\n", err)
 	}
 
 	return selected, nil
+}
+
+func SelectProvider() (string, error) {
+	var selectedChain string
+	var selectedProvider string
+
+	var _chains []string
+	chains := viper.GetStringMap("providers")
+	for key, _ := range chains {
+		_chains = append(_chains, key)
+	}
+	_chains = append(_chains, LAST_PROVIDER_STRING)
+	var selectQs = &survey.Select{
+		Message: "Select Chain: ",
+		Options: _chains,
+	}
+
+	err := survey.AskOne(selectQs, &selectedChain)
+	if err != nil {
+		return "", fmt.Errorf("Prompt failed %v\n", err)
+	}
+
+	if selectedChain == LAST_PROVIDER_STRING {
+		inputQs := &survey.Input{
+			Message: "Enter the Provider URL: ",
+		}
+
+		err := survey.AskOne(inputQs, &selectedProvider)
+		if err != nil {
+			return "", fmt.Errorf("Prompt failed %v\n", err)
+		}
+
+	} else {
+		_providers := viper.GetStringMapString("providers." + selectedChain)
+		providers := make([]ProviderUrl, 0)
+		for k, v := range _providers {
+			providers = append(providers, ProviderUrl{k, v})
+		}
+		titles := make([]string, len(providers))
+		for i, m := range providers {
+			titles[i] = m.Name
+		}
+		var qs = &survey.Select{
+			Message: "Select Provider: ",
+			Options: titles,
+			Description: func(value string, index int) string {
+				return providers[index].Url
+			},
+		}
+
+		answerIndex := 0
+		err := survey.AskOne(qs, &answerIndex)
+		if err != nil {
+			return "", fmt.Errorf("Prompt failed %v\n", err)
+		}
+		selectedProvider = providers[answerIndex].Url
+
+		if selectedProvider == "" {
+			errM := selectedChain + "-" + providers[answerIndex].Name + " Chain No Provider"
+			log.Fatal(errM)
+		}
+	}
+
+	return selectedProvider, nil
 }

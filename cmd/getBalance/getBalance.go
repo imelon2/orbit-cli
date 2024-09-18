@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	prompt "github.com/imelon2/orbit-toolkit/prompt"
+	prompt "github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
 )
 

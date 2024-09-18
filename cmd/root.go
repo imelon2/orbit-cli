@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"runtime"
 
-	account "github.com/imelon2/orbit-toolkit/cmd/account"
-	getBalance "github.com/imelon2/orbit-toolkit/cmd/getBalance"
-	parse "github.com/imelon2/orbit-toolkit/cmd/parse"
-	"github.com/imelon2/orbit-toolkit/prompt"
-	"github.com/imelon2/orbit-toolkit/utils"
+	account "github.com/imelon2/orbit-cli/cmd/account"
+	getBalance "github.com/imelon2/orbit-cli/cmd/getBalance"
+	parse "github.com/imelon2/orbit-cli/cmd/parse"
+	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

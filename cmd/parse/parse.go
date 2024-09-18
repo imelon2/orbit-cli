@@ -7,8 +7,8 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/imelon2/orbit-toolkit/prompt"
-	"github.com/imelon2/orbit-toolkit/utils"
+	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -46,4 +46,5 @@ to quickly create a Cobra application.`,
 
 func init() {
 	ParseCmd.AddCommand(CalldataCmd)
+	ParseCmd.AddCommand(EventCmd)
 }

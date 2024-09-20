@@ -18,8 +18,8 @@ type ProviderUrl struct {
 	Url  string
 }
 
-var LAST_WALLET_STRING = "Enter"
-var LAST_PROVIDER_STRING = "Enter Provider URL"
+var LAST_WALLET_STRING = "< Enter Wallet Address >"
+var LAST_PROVIDER_STRING = "< Enter Provider URL >"
 
 func SelectWallet() (string, error) {
 	wallets := viper.GetStringSlice("wallets")

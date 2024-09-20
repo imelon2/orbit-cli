@@ -12,6 +12,7 @@ import (
 	account "github.com/imelon2/orbit-cli/cmd/account"
 	getBalance "github.com/imelon2/orbit-cli/cmd/getBalance"
 	parse "github.com/imelon2/orbit-cli/cmd/parse"
+	system "github.com/imelon2/orbit-cli/cmd/system"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
@@ -59,6 +60,7 @@ func init() {
 	rootCmd.AddCommand(account.AccountCmd)
 	rootCmd.AddCommand(getBalance.GetBalanceCmd)
 	rootCmd.AddCommand(parse.ParseCmd)
+	rootCmd.AddCommand(system.SystemCmd)
 
 	var cfgFile string
 	// Here you will define your flags and configuration settings.

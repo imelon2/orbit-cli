@@ -7,15 +7,15 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/imelon2/orbit-cli/prompt"
+	prompt "github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-// accountCmd represents the account command
-var AccountCmd = &cobra.Command{
-	Use:   "account",
-	Short: "Manage accounts, list all existing accounts",
+// assetCmd represents the asset command
+var AssetCmd = &cobra.Command{
+	Use:   "asset",
+	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, filename, _, ok := runtime.Caller(0)
 		if !ok {
@@ -39,7 +39,5 @@ var AccountCmd = &cobra.Command{
 }
 
 func init() {
-	AccountCmd.AddCommand(ListCmd)
-	AccountCmd.AddCommand(NewCmd)
-	AccountCmd.AddCommand(ImportCmd)
+	AssetCmd.AddCommand(BalanceCmd)
 }

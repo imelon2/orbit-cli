@@ -6,18 +6,22 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/hokaccha/go-prettyjson"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
+
+type CalldataLog struct {
+	Function string      `json:"function"`
+	Params   interface{} `json:"params"`
+}
 
 // calldataCmd represents the calldata command
 var CalldataCmd = &cobra.Command{
@@ -33,26 +37,29 @@ var CalldataCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to get ABI: %v", err)
 		}
-		provider, err := prompt.SelectProvider()
+		providerOrCalldata, isProvider, err := prompt.SelectProviderOrCalldata()
 		if err != nil {
 			log.Fatal(err)
 		}
-		txHashOrCalldata, err := prompt.EnterTransactionHashOrBytes()
-
-		client := utils.GetClient(provider)
 
 		var data []byte
-		if utils.IsTransaction(txHashOrCalldata) {
-			tx, _, err := client.TransactionByHash(context.Background(), common.HexToHash(txHashOrCalldata))
+		if isProvider {
+			client := utils.GetClient(providerOrCalldata)
+
+			txHash, err := prompt.EnterTransactionHash()
+			if err != nil {
+				log.Fatalf("Failed to get txHash: %v", err)
+			}
+
+			tx, _, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
 				log.Fatal(err)
 			}
 			data = tx.Data()
 		} else {
-			txHashOrCalldata = txHashOrCalldata[2:]
-
+			providerOrCalldata = providerOrCalldata[2:]
 			// hex 문자열을 []byte로 변환
-			calldataBytes, err := hex.DecodeString(txHashOrCalldata)
+			calldataBytes, err := hex.DecodeString(providerOrCalldata)
 			if err != nil {
 				log.Fatalf("calldata 변환 에러: %v", err)
 			}
@@ -70,18 +77,23 @@ var CalldataCmd = &cobra.Command{
 			log.Fatalf("Failed to unpack calldata: %v", err)
 		}
 
+		var resultJson CalldataLog
+		resultJson.Function = method.RawName
 		jsonCalldata := make(map[string]interface{})
 		for i, data := range inter {
 			jsonCalldata[method.Inputs[i].Name] = utils.ConvertBytesToHex(data)
 		}
 
-		jsonData, err := json.MarshalIndent(jsonCalldata, "", "  ")
+		resultJson.Params = jsonCalldata
+
+		formatter := prettyjson.NewFormatter()
+		formatter.Indent = 2
+
+		coloredJson, err := formatter.Marshal(resultJson)
 		if err != nil {
-			log.Fatalf("Failed to MarshalIndent calldata: %v", err)
+			log.Fatalf("Failed to Marshal calldata: %v", err)
 		}
-		fmt.Printf("Function : %s\n", parsedABI.Methods[method.Name])
-		fmt.Printf("Calldata Length : %d\n\n", len(data))
-		fmt.Fprintln(os.Stdout, string(jsonData))
+		fmt.Println(string(coloredJson))
 	},
 }
 

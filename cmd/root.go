@@ -10,7 +10,7 @@ import (
 	"runtime"
 
 	account "github.com/imelon2/orbit-cli/cmd/account"
-	getBalance "github.com/imelon2/orbit-cli/cmd/getBalance"
+	asset "github.com/imelon2/orbit-cli/cmd/asset"
 	parse "github.com/imelon2/orbit-cli/cmd/parse"
 	system "github.com/imelon2/orbit-cli/cmd/system"
 	"github.com/imelon2/orbit-cli/prompt"
@@ -21,8 +21,8 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "orbit",
-	Short: "Orbit 테스트를 위한 CLI Tool",
+	Use:   "orbit-cli",
+	Short: "Orbit CLI Tool",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		_, filename, _, ok := runtime.Caller(0)
@@ -58,9 +58,11 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(account.AccountCmd)
-	rootCmd.AddCommand(getBalance.GetBalanceCmd)
 	rootCmd.AddCommand(parse.ParseCmd)
 	rootCmd.AddCommand(system.SystemCmd)
+	rootCmd.AddCommand(asset.AssetCmd)
+
+	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
 	var cfgFile string
 	// Here you will define your flags and configuration settings.
@@ -95,10 +97,5 @@ func init() {
 		if err := viper.ReadInConfig(); err != nil {
 			log.Fatalf("Error reading config file: %s", err)
 		}
-
-		// CLI 플래그를 설정에 바인딩
-		// if err := viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port")); err != nil {
-		// 	log.Fatalf("Error binding flag: %s", err)
-		// }
 	})
 }

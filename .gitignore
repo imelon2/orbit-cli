@@ -6,3 +6,5 @@ solgen/go/
 solgen/abi/aggregateAbi.json
 .make/
 config.yml
+
+keystore/accounts/*

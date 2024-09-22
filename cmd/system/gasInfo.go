@@ -24,7 +24,7 @@ var opts = &bind.CallOpts{
 var GasInfoCmd = &cobra.Command{
 	Use:   "gasInfo",
 	Short: "A brief description of your command",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		provider, err := prompt.SelectProvider()
 		if err != nil {
 			log.Fatal(err)
@@ -32,8 +32,17 @@ var GasInfoCmd = &cobra.Command{
 		client := utils.GetClient(provider)
 
 		ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, client)
+		ArbSys, err := precompilesgen.NewArbSys(types.ArbSysAddress, client)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		ArbOSVersion, err := ArbSys.ArbOSVersion(opts)
+
+		fmt.Print("\n\n")
+		fmt.Printf("ArbOSVersion             : %d\n", ArbOSVersion.Int64()-55)
+		if ArbOSVersion.Int64()-55 >= 20 {
+
 		}
 		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(opts)
 		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(opts)
@@ -54,8 +63,6 @@ var GasInfoCmd = &cobra.Command{
 		fmt.Print("\n")
 		fmt.Printf("L1PricingFundsDueForRewards : %d\n", L1PricingFundsDueForRewards)
 		fmt.Printf("LastL1PricingUpdateTime     : %d\n", LastL1PricingUpdateTime)
-
-		return nil
 	},
 }
 

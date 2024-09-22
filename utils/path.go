@@ -23,3 +23,11 @@ func GetAbiDir() string {
 	abiPath := filepath.Join(parent, "solgen", "abi", "aggregateAbi.json")
 	return abiPath
 }
+
+func GetKeystoreDir() string {
+	_, filename, _, _ := runtime.Caller(0)
+	root := filepath.Dir(filename)
+	parent := filepath.Dir(root)
+	keystorePath := filepath.Join(parent, "keystore", "accounts")
+	return keystorePath
+}

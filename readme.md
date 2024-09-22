@@ -4,21 +4,21 @@
 This repository provides developers with powerful tools and libraries designed to seamlessly integrate Ethereum's Layer 1, Arbitrum's Layer 2, and Orbit's Layer 3 solutions.
 
 ## Quick Start
-```
-git submodule update --init
+```bash
+$ git submodule update --init
 
-cp config.exmaple.yml config.yml
+$ cp config.exmaple.yml config.yml
 
-make build
+$ make build
 ```
 
 ## How to use
-```
-orbit-toolkit
+```bash
+$ orbit-cli
 ```
 
 ## Custom Provider
-#### (1) Enter Custom Provider Url in config.yml
+Enter Custom Provider Url on config.yml
 ```yml
 providers:
   local:
@@ -31,10 +31,6 @@ providers:
     orbit: < Enter Sepolia Provider URL >
 ```
 
-#### (2) Re-Build Cli Toolkit
-```
-make build
-```
 
 ## Requirement
 | Name | Version |

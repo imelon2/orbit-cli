@@ -40,4 +40,5 @@ var AssetCmd = &cobra.Command{
 
 func init() {
 	AssetCmd.AddCommand(BalanceCmd)
+	AssetCmd.AddCommand(SendCmd)
 }

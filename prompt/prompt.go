@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/imelon2/orbit-cli/utils"
@@ -19,9 +20,11 @@ type ProviderUrl struct {
 	Url  string
 }
 
-var LAST_WALLET_STRING = "< Enter Wallet Address >"
-var LAST_PROVIDER_STRING = "< Enter Provider URL >"
-var LAST_CALLDATA_STRING = "< Enter Calldata type of bytes >"
+const (
+	LAST_WALLET_STRING   = "< Enter Wallet Address >"
+	LAST_PROVIDER_STRING = "< Enter Provider URL >"
+	LAST_CALLDATA_STRING = "< Enter Calldata type of bytes >"
+)
 
 func SelectWallet() (string, error) {
 	path := utils.GetKeystoreDir()
@@ -33,6 +36,7 @@ func SelectWallet() (string, error) {
 	for _, wallet := range accounts {
 		addressList = append(addressList, wallet.Address.Hex())
 	}
+	addressList = append(addressList, LAST_WALLET_STRING)
 	var qs = &survey.Select{
 		Message: "Select Wallet: ",
 		Options: addressList,
@@ -50,8 +54,8 @@ func SelectWallet() (string, error) {
 
 		var validationQs = []*survey.Question{
 			{
-				Name:   "Hash",
-				Prompt: &survey.Input{Message: "Enter the transaction hash: "},
+				Name:   "Address",
+				Prompt: &survey.Input{Message: "Enter the Address: "},
 				Validate: func(val interface{}) error {
 					// if the input matches the expectation
 					if str := val.(string); !utils.IsAddress(str) {
@@ -72,6 +76,45 @@ func SelectWallet() (string, error) {
 	}
 
 	return selectedWallet, nil
+}
+
+func SelectWalletForSign() (accounts.Wallet, string, error) {
+	path := utils.GetKeystoreDir()
+	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
+
+	var addressList []string
+	accounts := ks.Accounts()
+
+	for _, wallet := range accounts {
+		addressList = append(addressList, wallet.Address.Hex())
+	}
+
+	var qs = &survey.Select{
+		Message: "Select Wallet: ",
+		Options: addressList,
+	}
+
+	answerIndex := 0
+	err := survey.AskOne(qs, &answerIndex)
+	if err != nil {
+		return nil, "", fmt.Errorf("Prompt failed %v\n", err)
+	}
+
+	pw := ""
+	err = ks.Unlock(accounts[answerIndex], pw)
+
+	if err == keystore.ErrDecrypt {
+		pw, err = EnterPassword()
+		err = ks.Unlock(accounts[answerIndex], pw)
+	} else if err != nil {
+		return nil, "", fmt.Errorf("Open Wallet failed %v\n", err)
+	}
+
+	wallet := ks.Wallets()[answerIndex]
+
+	address := accounts[answerIndex].Address.Hex()
+
+	return wallet, address, nil
 }
 
 func SelectCommand(dirPath string) (string, error) {
@@ -229,6 +272,7 @@ func SelectProviderOrCalldata() (string, bool, error) {
 		for i, m := range providers {
 			titles[i] = m.Name
 		}
+
 		var qs = &survey.Select{
 			Message: "Select Provider: ",
 			Options: titles,

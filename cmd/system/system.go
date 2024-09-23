@@ -40,4 +40,5 @@ var SystemCmd = &cobra.Command{
 
 func init() {
 	SystemCmd.AddCommand(GasInfoCmd)
+	SystemCmd.AddCommand(AccountsCmd)
 }

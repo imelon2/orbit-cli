@@ -20,7 +20,7 @@ func IsPrivateKey(addr string) bool {
 	return re.MatchString(addr)
 }
 
+// 문자열에 공백이 포함되어 있는지 검사
 func IsWithSpace(s string) bool {
-	// 문자열에 공백이 포함되어 있는지 검사
 	return strings.Contains(s, " ")
 }

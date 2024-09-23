@@ -49,5 +49,5 @@ func getAccountBalance() {
 	ethValue2 := new(big.Float).SetInt(pendingBalance)
 	ethValue2.Quo(ethValue2, big.NewFloat(1e18))
 
-	fmt.Printf("\nBalance: %.18f ETH\n", ethValue2)
+	fmt.Printf("\n\nBalance: %.18f ETH\n", ethValue2)
 }

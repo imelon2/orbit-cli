@@ -20,6 +20,12 @@ var ListCmd = &cobra.Command{
 		ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 
 		accounts := ks.Accounts()
+		if len(accounts) == 0 {
+			fmt.Print("\nNo keystore was created.\n")
+			fmt.Print("Execute the " + utils.BoldString("{ orbit-cli account new }") + " to create a keystore.\n")
+			return
+		}
+
 		for i, wallet := range accounts {
 			fmt.Printf("[%d] %s\n", i, wallet.Address.Hex())
 		}

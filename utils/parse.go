@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"reflect"
 )
 
@@ -66,4 +67,17 @@ func ConvertBytesToHex(data interface{}) interface{} {
 		// 다른 타입일 경우, 그대로 반환
 		return data
 	}
+}
+
+func FloatToWei(a *big.Float) *big.Int {
+	weiFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+
+	etherInWei := new(big.Float).Set(a)
+
+	weiAmount := new(big.Float).Mul(etherInWei, new(big.Float).SetInt(weiFactor))
+
+	weiResult := new(big.Int)
+	weiAmount.Int(weiResult)
+
+	return weiResult
 }

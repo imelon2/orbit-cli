@@ -6,13 +6,11 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/hokaccha/go-prettyjson"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
@@ -86,14 +84,7 @@ var CalldataCmd = &cobra.Command{
 
 		resultJson.Params = jsonCalldata
 
-		formatter := prettyjson.NewFormatter()
-		formatter.Indent = 2
-
-		coloredJson, err := formatter.Marshal(resultJson)
-		if err != nil {
-			log.Fatalf("Failed to Marshal calldata: %v", err)
-		}
-		fmt.Println(string(coloredJson))
+		utils.PrintPrettyJson(resultJson)
 	},
 }
 

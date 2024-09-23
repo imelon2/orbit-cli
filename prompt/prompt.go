@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -78,14 +80,14 @@ func SelectWallet() (string, error) {
 	return selectedWallet, nil
 }
 
-func SelectWalletForSign() (accounts.Wallet, string, error) {
+func SelectWalletForSign() (accounts.Wallet, accounts.Account, error) {
 	path := utils.GetKeystoreDir()
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 
 	var addressList []string
-	accounts := ks.Accounts()
+	_accounts := ks.Accounts()
 
-	for _, wallet := range accounts {
+	for _, wallet := range _accounts {
 		addressList = append(addressList, wallet.Address.Hex())
 	}
 
@@ -97,24 +99,38 @@ func SelectWalletForSign() (accounts.Wallet, string, error) {
 	answerIndex := 0
 	err := survey.AskOne(qs, &answerIndex)
 	if err != nil {
-		return nil, "", fmt.Errorf("Prompt failed %v\n", err)
+		return nil, accounts.Account{}, fmt.Errorf("Prompt failed %v\n", err)
 	}
 
-	pw := ""
-	err = ks.Unlock(accounts[answerIndex], pw)
+	var pw string = ""
+	var wallet accounts.Wallet
 
+	err = ks.Unlock(_accounts[answerIndex], pw)
 	if err == keystore.ErrDecrypt {
-		pw, err = EnterPassword()
-		err = ks.Unlock(accounts[answerIndex], pw)
+		var validationQs = []*survey.Question{
+			{
+				Name:   "Password",
+				Prompt: &survey.Password{Message: "Enter the password [for skip <ENTER>]: "},
+				Validate: func(val interface{}) error {
+
+					err = ks.Unlock(_accounts[answerIndex], val.(string))
+
+					if err == keystore.ErrDecrypt {
+						return errors.New("Invaild Password :" + err.Error() + "\n")
+					}
+					// nothing was wrong
+					return nil
+				},
+			},
+		}
+		err = survey.Ask(validationQs, &pw)
 	} else if err != nil {
-		return nil, "", fmt.Errorf("Open Wallet failed %v\n", err)
+		return nil, accounts.Account{}, fmt.Errorf("SelectWalletForSign failed %v\n", err)
 	}
 
-	wallet := ks.Wallets()[answerIndex]
+	wallet = ks.Wallets()[answerIndex]
 
-	address := accounts[answerIndex].Address.Hex()
-
-	return wallet, address, nil
+	return wallet, _accounts[answerIndex], nil
 }
 
 func SelectCommand(dirPath string) (string, error) {
@@ -161,9 +177,13 @@ func SelectProvider() (string, error) {
 
 	var _chains []string
 	chains := viper.GetStringMap("providers")
+
 	for key, _ := range chains {
 		_chains = append(_chains, key)
 	}
+
+	sort.Strings(_chains)
+
 	_chains = append(_chains, LAST_PROVIDER_STRING)
 	var selectQs = &survey.Select{
 		Message: "Select Chain: ",
@@ -187,10 +207,16 @@ func SelectProvider() (string, error) {
 
 	} else {
 		_providers := viper.GetStringMapString("providers." + selectedChain)
+
 		providers := make([]ProviderUrl, 0)
 		for k, v := range _providers {
 			providers = append(providers, ProviderUrl{k, v})
 		}
+
+		sort.Slice(providers, func(i, j int) bool {
+			return providers[i].Name < providers[j].Name
+		})
+
 		titles := make([]string, len(providers))
 		for i, m := range providers {
 			titles[i] = m.Name
@@ -228,6 +254,9 @@ func SelectProviderOrCalldata() (string, bool, error) {
 	for key, _ := range chains {
 		_chains = append(_chains, key)
 	}
+
+	sort.Strings(_chains)
+
 	_chains = append(_chains, LAST_PROVIDER_STRING)
 	_chains = append(_chains, LAST_CALLDATA_STRING)
 	var selectQs = &survey.Select{
@@ -268,6 +297,11 @@ func SelectProviderOrCalldata() (string, bool, error) {
 		for k, v := range _providers {
 			providers = append(providers, ProviderUrl{k, v})
 		}
+
+		sort.Slice(providers, func(i, j int) bool {
+			return providers[i].Name < providers[j].Name
+		})
+
 		titles := make([]string, len(providers))
 		for i, m := range providers {
 			titles[i] = m.Name
@@ -390,4 +424,40 @@ func EnterPassword() (string, error) {
 	}
 
 	return password, nil
+}
+
+func EnterRecipient() (string, error) {
+	var recipientQs = &survey.Input{Message: "Enter the recipient address : "}
+
+	var to string
+	err := survey.AskOne(recipientQs, &to, survey.WithValidator(func(val interface{}) error {
+		if str := val.(string); !utils.IsAddress(str) {
+			return errors.New("Invalid Address")
+		}
+		return nil
+	}))
+
+	if err != nil {
+		return "", fmt.Errorf("EnterRecipient Prompt failed %v\n", err)
+	}
+
+	return to, nil
+}
+
+func EnterValue() (*big.Int, error) {
+	var valueQs = &survey.Input{Message: "Enter the Value [Set 0 value <ENTER>] : "}
+
+	var value string
+	err := survey.AskOne(valueQs, &value)
+
+	if err != nil {
+		return nil, fmt.Errorf("EnterValue Prompt failed %v\n", err)
+	}
+
+	etherInWei := new(big.Float)
+	etherInWei.SetString(value)
+
+	wei := utils.FloatToWei(etherInWei)
+
+	return wei, nil
 }

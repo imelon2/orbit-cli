@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
@@ -16,15 +15,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var opts = &bind.CallOpts{
-	Pending: false, // 트랜잭션이 확정된 상태를 조회
-	Context: nil,   // 컨텍스트가 필요한 경우 (예: 시간 초과)
-}
-
 // gasInfoCmd represents the gasInfo command
-var GasInfoCmd = &cobra.Command{
-	Use:   "gasInfo",
-	Short: "Get & Set Network Gas variable from ArbOS",
+var GasCmd = &cobra.Command{
+	Use:   "gas",
+	Short: "Print network gas variable from ArbGasInfo, ArbSys",
 	Run: func(cmd *cobra.Command, args []string) {
 		provider, err := prompt.SelectProvider()
 		if err != nil {
@@ -38,33 +32,33 @@ var GasInfoCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		ArbOSVersion, err := ArbSys.ArbOSVersion(opts)
+		ArbOSVersion, err := ArbSys.ArbOSVersion(utils.Callopts)
 
 		fmt.Printf("\nArbOSVersion                 : %d\n", ArbOSVersion.Int64()-55)
 		if ArbOSVersion.Int64()-55 >= 20 {
 
 		}
-		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(opts)
-		L1PricingFundsDueForRewards, err := ArbGasInfo.GetL1PricingFundsDueForRewards(opts) // 20
-		L1PricingSurplus, err := ArbGasInfo.GetL1PricingSurplus(opts)                       // 20
-		LastL1PricingSurplus, err := ArbGasInfo.GetLastL1PricingSurplus(opts)               // 20
+		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(utils.Callopts)
+		L1PricingFundsDueForRewards, err := ArbGasInfo.GetL1PricingFundsDueForRewards(utils.Callopts) // 20
+		L1PricingSurplus, err := ArbGasInfo.GetL1PricingSurplus(utils.Callopts)                       // 20
+		LastL1PricingSurplus, err := ArbGasInfo.GetLastL1PricingSurplus(utils.Callopts)               // 20
 
-		L1PricingUnitsSinceUpdate, err := ArbGasInfo.GetL1PricingUnitsSinceUpdate(opts) // 20
+		L1PricingUnitsSinceUpdate, err := ArbGasInfo.GetL1PricingUnitsSinceUpdate(utils.Callopts) // 20
 
-		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(opts)
-		LastL1PricingUpdateTime, err := ArbGasInfo.GetLastL1PricingUpdateTime(opts) // 20
+		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(utils.Callopts)
+		LastL1PricingUpdateTime, err := ArbGasInfo.GetLastL1PricingUpdateTime(utils.Callopts) // 20
 
-		MinimumGasPrice, err := ArbGasInfo.GetMinimumGasPrice(opts)
-		AmortizedCostCapBips, err := ArbGasInfo.GetAmortizedCostCapBips(opts)
-		L1PricingEquilibrationUnits, err := ArbGasInfo.GetL1PricingEquilibrationUnits(opts) // 20
-		L1BaseFeeEstimateInertia, err := ArbGasInfo.GetL1BaseFeeEstimateInertia(opts)
-		PerBatchGasCharge, err := ArbGasInfo.GetPerBatchGasCharge(opts)
-		L1RewardRate, err := ArbGasInfo.GetL1RewardRate(opts)
-		L1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(opts)
-		CurrentTxL1GasFees, err := ArbGasInfo.GetCurrentTxL1GasFees(opts)
-		GasBacklog, err := ArbGasInfo.GetGasBacklog(opts)
-		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(opts)
-		PricingInertia, err := ArbGasInfo.GetPricingInertia(opts)
+		MinimumGasPrice, err := ArbGasInfo.GetMinimumGasPrice(utils.Callopts)
+		AmortizedCostCapBips, err := ArbGasInfo.GetAmortizedCostCapBips(utils.Callopts)
+		L1PricingEquilibrationUnits, err := ArbGasInfo.GetL1PricingEquilibrationUnits(utils.Callopts) // 20
+		L1BaseFeeEstimateInertia, err := ArbGasInfo.GetL1BaseFeeEstimateInertia(utils.Callopts)
+		PerBatchGasCharge, err := ArbGasInfo.GetPerBatchGasCharge(utils.Callopts)
+		L1RewardRate, err := ArbGasInfo.GetL1RewardRate(utils.Callopts)
+		L1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(utils.Callopts)
+		CurrentTxL1GasFees, err := ArbGasInfo.GetCurrentTxL1GasFees(utils.Callopts)
+		GasBacklog, err := ArbGasInfo.GetGasBacklog(utils.Callopts)
+		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(utils.Callopts)
+		PricingInertia, err := ArbGasInfo.GetPricingInertia(utils.Callopts)
 
 		header, err := client.HeaderByNumber(context.Background(), nil /* Latest */)
 		if err != nil {

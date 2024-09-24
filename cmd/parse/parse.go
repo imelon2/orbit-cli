@@ -47,4 +47,7 @@ to quickly create a Cobra application.`,
 func init() {
 	ParseCmd.AddCommand(CalldataCmd)
 	ParseCmd.AddCommand(EventCmd)
+	ParseCmd.AddCommand(EventCmd)
+	ParseCmd.AddCommand(AliasCmd)
+	ParseCmd.AddCommand(RetryableCmd)
 }

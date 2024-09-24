@@ -4,23 +4,99 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"os"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
+	"github.com/imelon2/orbit-cli/utils"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-// accountsCmd represents the accounts command
 var AccountsCmd = &cobra.Command{
 	Use:   "accounts",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Print network account from ArbAggregator",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("accounts called")
+		provider, err := prompt.SelectProvider()
+		if err != nil {
+			log.Fatal(err)
+		}
+		client := utils.GetClient(provider)
+
+		ArbAggregator, err := precompilesgen.NewArbAggregator(types.ArbAggregatorAddress, client)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ArbOwnerPublic, err := precompilesgen.NewArbOwnerPublic(types.ArbOwnerPublicAddress, client)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, client)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		owners, err := ArbOwnerPublic.GetAllChainOwners(utils.Callopts)
+
+		networkFees := make([]common.Address, 0)
+		if networkFee, err := ArbOwnerPublic.GetNetworkFeeAccount(utils.Callopts); err == nil {
+			networkFees = append(networkFees, networkFee)
+		}
+
+		infraFeeAccounts := make([]common.Address, 0)
+		if infraFeeAccount, err := ArbOwnerPublic.GetInfraFeeAccount(utils.Callopts); err == nil {
+			infraFeeAccounts = append(infraFeeAccounts, infraFeeAccount)
+		}
+
+		l1RewardRecipients := make([]common.Address, 0)
+		if l1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(utils.Callopts); err == nil {
+			l1RewardRecipients = append(l1RewardRecipients, l1RewardRecipient)
+		}
+
+		batchPosters, err := ArbAggregator.GetBatchPosters(utils.Callopts)
+
+		feeCollectors := make([]common.Address, 0)
+		for _, poster := range batchPosters {
+			feeCollector, err := ArbAggregator.GetFeeCollector(utils.Callopts, poster)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			feeCollectors = append(feeCollectors, feeCollector)
+		}
+
+		length := utils.SafeGetLongestArray(owners, networkFees, infraFeeAccounts, l1RewardRecipients, batchPosters, feeCollectors)
+
+		data := make([][]string, 0)
+		for i := 0; i < length; i++ {
+			data = append(data, []string{
+				"",
+				utils.SafeGetAddressString(owners, i),
+				utils.SafeGetAddressString(networkFees, i),
+				utils.SafeGetAddressString(infraFeeAccounts, i),
+				utils.SafeGetAddressString(l1RewardRecipients, i),
+				utils.SafeGetAddressString(batchPosters, i),
+				utils.SafeGetAddressString(feeCollectors, i),
+			})
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Index", "Owners", "Network Fee", "Infra Fee", "l1 Rewarder", "Poster", "Poster Fee Collector"})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgBlueColor},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
+		)
+		table.AppendBulk(data) // Add Bulk Data
+		table.Render()
 	},
 }
 

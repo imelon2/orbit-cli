@@ -54,23 +54,7 @@ func SelectWallet() (string, error) {
 
 	if selected == LAST_WALLET_STRING {
 
-		var validationQs = []*survey.Question{
-			{
-				Name:   "Address",
-				Prompt: &survey.Input{Message: "Enter the Address: "},
-				Validate: func(val interface{}) error {
-					// if the input matches the expectation
-					if str := val.(string); !utils.IsAddress(str) {
-						return errors.New("Invalid Address")
-					}
-					// nothing was wrong
-					return nil
-				},
-			},
-		}
-
-		var selected string
-		err := survey.Ask(validationQs, &selected)
+		selected, err := EnterAddress()
 		if err != nil {
 			return "", fmt.Errorf("Prompt failed %v\n", err)
 		}
@@ -80,7 +64,7 @@ func SelectWallet() (string, error) {
 	return selectedWallet, nil
 }
 
-func SelectWalletForSign() (accounts.Wallet, accounts.Account, error) {
+func SelectWalletForSign() (accounts.Wallet, *keystore.KeyStore, accounts.Account, error) {
 	path := utils.GetKeystoreDir()
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
 
@@ -99,7 +83,7 @@ func SelectWalletForSign() (accounts.Wallet, accounts.Account, error) {
 	answerIndex := 0
 	err := survey.AskOne(qs, &answerIndex)
 	if err != nil {
-		return nil, accounts.Account{}, fmt.Errorf("Prompt failed %v\n", err)
+		return nil, nil, accounts.Account{}, fmt.Errorf("Prompt failed %v\n", err)
 	}
 
 	var pw string = ""
@@ -125,12 +109,12 @@ func SelectWalletForSign() (accounts.Wallet, accounts.Account, error) {
 		}
 		err = survey.Ask(validationQs, &pw)
 	} else if err != nil {
-		return nil, accounts.Account{}, fmt.Errorf("SelectWalletForSign failed %v\n", err)
+		return nil, nil, accounts.Account{}, fmt.Errorf("SelectWalletForSign failed %v\n", err)
 	}
 
 	wallet = ks.Wallets()[answerIndex]
 
-	return wallet, _accounts[answerIndex], nil
+	return wallet, ks, _accounts[answerIndex], nil
 }
 
 func SelectCommand(dirPath string) (string, error) {
@@ -245,7 +229,7 @@ func SelectProvider() (string, error) {
 	return selectedProvider, nil
 }
 
-func SelectProviderOrCalldata() (string, bool, error) {
+func SelectProviderOrBytes() (string, bool, error) {
 	var selectedChain string
 	var selectedProvider string
 
@@ -329,6 +313,55 @@ func SelectProviderOrCalldata() (string, bool, error) {
 	}
 
 	return selectedProvider, true, nil
+}
+
+// true = Parent -> Child ||
+// false = Child -> Parent
+func SelectChainTo() (bool, error) {
+
+	inputQs := &survey.Select{
+		Message: "Select forward direction",
+		Options: []string{
+			"Parent -> Child",
+			"Parent <- Child",
+		},
+	}
+	answerIndex := 0
+	err := survey.AskOne(inputQs, &answerIndex)
+
+	if err != nil {
+		return false, fmt.Errorf("Prompt failed %v\n", err)
+	}
+
+	if answerIndex == 0 {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+func EnterAddress() (string, error) {
+	var validationQs = []*survey.Question{
+		{
+			Name:   "Address",
+			Prompt: &survey.Input{Message: "Enter the Address: "},
+			Validate: func(val interface{}) error {
+				// if the input matches the expectation
+				if str := val.(string); !utils.IsAddress(str) {
+					return errors.New("Invalid Address")
+				}
+				return nil
+			},
+		},
+	}
+
+	var selectedAddress string
+	err := survey.Ask(validationQs, &selectedAddress)
+	if err != nil {
+		return "", fmt.Errorf("Prompt failed %v\n", err)
+	}
+
+	return selectedAddress, nil
 }
 
 func EnterTransactionHash() (common.Hash, error) {

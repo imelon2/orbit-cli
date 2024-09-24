@@ -7,55 +7,54 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-// sendCmd represents the send command
-var SendCmd = &cobra.Command{
-	Use:   "send",
-	Short: "Send ETH from select wallet",
+// setAccountsCmd represents the setAccounts command
+var SetAccountsCmd = &cobra.Command{
+	Use:   "setAccounts",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		value, err := prompt.EnterValue()
-		to, err := prompt.EnterRecipient()
-		toAddress := common.HexToAddress(to)
-
-		wallet, _, account, err := prompt.SelectWalletForSign()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		provider, err := prompt.SelectProvider()
 		if err != nil {
 			log.Fatal(err)
 		}
+		client := utils.GetClient(provider)
 
-		client, err := ethclient.Dial(provider)
+		_, ks, account, err := prompt.SelectWalletForSign()
 
-		nonce, err := client.PendingNonceAt(context.Background(), account.Address)
-		gasLimit := uint64(21000)
-		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, nil /* calldata */)
+		ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// wallet.SignTx()
 		chainID, err := client.NetworkID(context.Background())
+		nonce, err := client.PendingNonceAt(context.Background(), account.Address)
+		auth, err := bind.NewKeyStoreTransactorWithChainID(ks, account, chainID)
+		auth.Nonce = big.NewInt(int64(nonce + 1))
 
+		signedTx, err := ArbOwner.SetInfraFeeAccount(auth, common.HexToAddress("0x10012d9D7365bD937d5c28f786045D7C93EDc7eC"))
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		signedTx, err := wallet.SignTx(account, tx, chainID)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		err = client.SendTransaction(context.Background(), signedTx)
 		if err != nil {
 			fmt.Println("SendTransaction")
@@ -83,4 +82,5 @@ var SendCmd = &cobra.Command{
 }
 
 func init() {
+
 }

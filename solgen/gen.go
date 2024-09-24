@@ -60,6 +60,7 @@ func main() {
 	patterns := []string{
 		filepath.Join(parent, "token-bridge-contracts", "build", "contracts", "contracts", "tokenbridge", "*", "*.sol", "*.json"),
 		filepath.Join(parent, "token-bridge-contracts", "build", "contracts", "contracts", "tokenbridge", "*", "*", "*.sol", "*.json"),
+		filepath.Join(parent, "canonical-weth", "build", "contracts", "WETH9.json"),
 	}
 
 	var filePathsTokenBridgeContract []string

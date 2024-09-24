@@ -11,3 +11,6 @@
 [submodule "promptui"]
 	path = promptui
 	url = https://github.com/shaneharter/promptui.git
+[submodule "canonical-weth"]
+	path = canonical-weth
+	url = https://github.com/gnosis/canonical-weth.git

@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -35,7 +36,7 @@ var CalldataCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to get ABI: %v", err)
 		}
-		providerOrCalldata, isProvider, err := prompt.SelectProviderOrCalldata()
+		providerOrCalldata, isProvider, err := prompt.SelectProviderOrBytes()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -51,7 +52,8 @@ var CalldataCmd = &cobra.Command{
 
 			tx, _, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Errorf("Failed to get TransactionByHash: %v", err)
+				return
 			}
 			data = tx.Data()
 		} else {

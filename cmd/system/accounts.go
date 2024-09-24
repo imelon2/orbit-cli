@@ -9,6 +9,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	ethLib "github.com/imelon2/orbit-cli/ethLib"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
 	"github.com/imelon2/orbit-cli/utils"
@@ -24,7 +26,10 @@ var AccountsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		client := utils.GetClient(provider)
+		client, err := ethclient.Dial(provider)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		ArbAggregator, err := precompilesgen.NewArbAggregator(types.ArbAggregatorAddress, client)
 		if err != nil {
@@ -41,28 +46,28 @@ var AccountsCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		owners, err := ArbOwnerPublic.GetAllChainOwners(utils.Callopts)
+		owners, err := ArbOwnerPublic.GetAllChainOwners(ethLib.Callopts)
 
 		networkFees := make([]common.Address, 0)
-		if networkFee, err := ArbOwnerPublic.GetNetworkFeeAccount(utils.Callopts); err == nil {
+		if networkFee, err := ArbOwnerPublic.GetNetworkFeeAccount(ethLib.Callopts); err == nil {
 			networkFees = append(networkFees, networkFee)
 		}
 
 		infraFeeAccounts := make([]common.Address, 0)
-		if infraFeeAccount, err := ArbOwnerPublic.GetInfraFeeAccount(utils.Callopts); err == nil {
+		if infraFeeAccount, err := ArbOwnerPublic.GetInfraFeeAccount(ethLib.Callopts); err == nil {
 			infraFeeAccounts = append(infraFeeAccounts, infraFeeAccount)
 		}
 
 		l1RewardRecipients := make([]common.Address, 0)
-		if l1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(utils.Callopts); err == nil {
+		if l1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(ethLib.Callopts); err == nil {
 			l1RewardRecipients = append(l1RewardRecipients, l1RewardRecipient)
 		}
 
-		batchPosters, err := ArbAggregator.GetBatchPosters(utils.Callopts)
+		batchPosters, err := ArbAggregator.GetBatchPosters(ethLib.Callopts)
 
 		feeCollectors := make([]common.Address, 0)
 		for _, poster := range batchPosters {
-			feeCollector, err := ArbAggregator.GetFeeCollector(utils.Callopts, poster)
+			feeCollector, err := ArbAggregator.GetFeeCollector(ethLib.Callopts, poster)
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
@@ -48,7 +49,10 @@ var EventCmd = &cobra.Command{
 			log.Fatalf("Failed to get txHash: %v", err)
 		}
 
-		client := utils.GetClient(provider)
+		client, err := ethclient.Dial(provider)
+		if err != nil {
+			log.Fatal(err)
+		}
 		tx, err := client.TransactionReceipt(context.Background(), txHash)
 
 		resultJson := make([]EventLog, 0)

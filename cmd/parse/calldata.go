@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
@@ -43,7 +44,10 @@ var CalldataCmd = &cobra.Command{
 
 		var data []byte
 		if isProvider {
-			client := utils.GetClient(providerOrCalldata)
+			client, err := ethclient.Dial(providerOrCalldata)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			txHash, err := prompt.EnterTransactionHash()
 			if err != nil {

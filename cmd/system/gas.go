@@ -9,6 +9,8 @@ import (
 	"log"
 
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	ethLib "github.com/imelon2/orbit-cli/ethLib"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
 	"github.com/imelon2/orbit-cli/utils"
@@ -24,7 +26,10 @@ var GasCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		client := utils.GetClient(provider)
+		client, err := ethclient.Dial(provider)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, client)
 		ArbSys, err := precompilesgen.NewArbSys(types.ArbSysAddress, client)
@@ -32,33 +37,33 @@ var GasCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		ArbOSVersion, err := ArbSys.ArbOSVersion(utils.Callopts)
+		ArbOSVersion, err := ArbSys.ArbOSVersion(ethLib.Callopts)
 
 		fmt.Printf("\nArbOSVersion                 : %d\n", ArbOSVersion.Int64()-55)
 		if ArbOSVersion.Int64()-55 >= 20 {
 
 		}
-		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(utils.Callopts)
-		L1PricingFundsDueForRewards, err := ArbGasInfo.GetL1PricingFundsDueForRewards(utils.Callopts) // 20
-		L1PricingSurplus, err := ArbGasInfo.GetL1PricingSurplus(utils.Callopts)                       // 20
-		LastL1PricingSurplus, err := ArbGasInfo.GetLastL1PricingSurplus(utils.Callopts)               // 20
+		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(ethLib.Callopts)
+		L1PricingFundsDueForRewards, err := ArbGasInfo.GetL1PricingFundsDueForRewards(ethLib.Callopts) // 20
+		L1PricingSurplus, err := ArbGasInfo.GetL1PricingSurplus(ethLib.Callopts)                       // 20
+		LastL1PricingSurplus, err := ArbGasInfo.GetLastL1PricingSurplus(ethLib.Callopts)               // 20
 
-		L1PricingUnitsSinceUpdate, err := ArbGasInfo.GetL1PricingUnitsSinceUpdate(utils.Callopts) // 20
+		L1PricingUnitsSinceUpdate, err := ArbGasInfo.GetL1PricingUnitsSinceUpdate(ethLib.Callopts) // 20
 
-		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(utils.Callopts)
-		LastL1PricingUpdateTime, err := ArbGasInfo.GetLastL1PricingUpdateTime(utils.Callopts) // 20
+		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(ethLib.Callopts)
+		LastL1PricingUpdateTime, err := ArbGasInfo.GetLastL1PricingUpdateTime(ethLib.Callopts) // 20
 
-		MinimumGasPrice, err := ArbGasInfo.GetMinimumGasPrice(utils.Callopts)
-		AmortizedCostCapBips, err := ArbGasInfo.GetAmortizedCostCapBips(utils.Callopts)
-		L1PricingEquilibrationUnits, err := ArbGasInfo.GetL1PricingEquilibrationUnits(utils.Callopts) // 20
-		L1BaseFeeEstimateInertia, err := ArbGasInfo.GetL1BaseFeeEstimateInertia(utils.Callopts)
-		PerBatchGasCharge, err := ArbGasInfo.GetPerBatchGasCharge(utils.Callopts)
-		L1RewardRate, err := ArbGasInfo.GetL1RewardRate(utils.Callopts)
-		L1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(utils.Callopts)
-		CurrentTxL1GasFees, err := ArbGasInfo.GetCurrentTxL1GasFees(utils.Callopts)
-		GasBacklog, err := ArbGasInfo.GetGasBacklog(utils.Callopts)
-		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(utils.Callopts)
-		PricingInertia, err := ArbGasInfo.GetPricingInertia(utils.Callopts)
+		MinimumGasPrice, err := ArbGasInfo.GetMinimumGasPrice(ethLib.Callopts)
+		AmortizedCostCapBips, err := ArbGasInfo.GetAmortizedCostCapBips(ethLib.Callopts)
+		L1PricingEquilibrationUnits, err := ArbGasInfo.GetL1PricingEquilibrationUnits(ethLib.Callopts) // 20
+		L1BaseFeeEstimateInertia, err := ArbGasInfo.GetL1BaseFeeEstimateInertia(ethLib.Callopts)
+		PerBatchGasCharge, err := ArbGasInfo.GetPerBatchGasCharge(ethLib.Callopts)
+		L1RewardRate, err := ArbGasInfo.GetL1RewardRate(ethLib.Callopts)
+		L1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(ethLib.Callopts)
+		CurrentTxL1GasFees, err := ArbGasInfo.GetCurrentTxL1GasFees(ethLib.Callopts)
+		GasBacklog, err := ArbGasInfo.GetGasBacklog(ethLib.Callopts)
+		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(ethLib.Callopts)
+		PricingInertia, err := ArbGasInfo.GetPricingInertia(ethLib.Callopts)
 
 		header, err := client.HeaderByNumber(context.Background(), nil /* Latest */)
 		if err != nil {

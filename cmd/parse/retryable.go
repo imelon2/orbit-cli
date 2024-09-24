@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
@@ -34,7 +35,10 @@ to quickly create a Cobra application.`,
 		if isProvider {
 			fmt.Print("\n\nTODO\n\n")
 			return
-			client := utils.GetClient(providerOrCalldata)
+			client, err := ethclient.Dial(providerOrCalldata)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			txHash, err := prompt.EnterTransactionHash()
 			if err != nil {

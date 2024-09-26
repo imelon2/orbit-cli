@@ -54,7 +54,7 @@ func SelectWallet() (string, error) {
 
 	if selected == LAST_WALLET_STRING {
 
-		selected, err := EnterAddress()
+		selected, err := EnterAddress("wanted")
 		if err != nil {
 			return "", fmt.Errorf("Prompt failed %v\n", err)
 		}
@@ -340,11 +340,11 @@ func SelectChainTo() (bool, error) {
 	}
 }
 
-func EnterAddress() (string, error) {
+func EnterAddress(name string) (string, error) {
 	var validationQs = []*survey.Question{
 		{
 			Name:   "Address",
-			Prompt: &survey.Input{Message: "Enter the Address: "},
+			Prompt: &survey.Input{Message: "Enter the " + name + " Address: "},
 			Validate: func(val interface{}) error {
 				// if the input matches the expectation
 				if str := val.(string); !utils.IsAddress(str) {
@@ -477,8 +477,8 @@ func EnterRecipient() (string, error) {
 	return to, nil
 }
 
-func EnterValue() (*big.Int, error) {
-	var valueQs = &survey.Input{Message: "Enter the Value [Set 0 value <ENTER>] : "}
+func EnterValue(name string) (*big.Int, error) {
+	var valueQs = &survey.Input{Message: "Enter the " + name + " Value(float) [Set 0 value <ENTER>] : "}
 
 	var value string
 	err := survey.AskOne(valueQs, &value)

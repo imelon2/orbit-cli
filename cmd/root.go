@@ -23,7 +23,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "orbit-cli",
 	Short: "Orbit CLI Tool",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 
 		_, filename, _, ok := runtime.Caller(0)
 		if !ok {
@@ -39,11 +39,9 @@ var rootCmd = &cobra.Command{
 
 		nextCmd, _, err := cmd.Root().Find([]string{selected})
 		if err != nil {
-			return err
+			log.Fatal("bad SelectCommand")
 		}
 		nextCmd.Run(nextCmd, args)
-
-		return nil
 	},
 }
 

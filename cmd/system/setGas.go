@@ -10,7 +10,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	ethLib "github.com/imelon2/orbit-cli/ethLib"
@@ -21,22 +20,21 @@ import (
 )
 
 const (
-	setL1PricingRewardRecipient = iota
-	setInfraFeeAccount
-	setNetworkFeeAccount
+	setL2BaseFee = iota
+	setL1PricePerUnit
+	setMinimumL2BaseFee
+	releaseL1PricerSurplusFunds
 )
 
-var setAccountsCommand = []string{"SetL1PricingRewardRecipient", "SetInfraFeeAccount", "SetNetworkFeeAccount"}
+var setGasCommand = []string{"SetL2BaseFee", "SetL1PricePerUnit", "SetMinimumL2BaseFee", "ReleaseL1PricerSurplusFunds"}
 
-// setAccountsCmd represents the setAccounts command
-var SetAccountsCmd = &cobra.Command{
-	Use:   "setAccounts",
+var SetGasCmd = &cobra.Command{
+	Use:   "setGas",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		var qs = &survey.Select{
 			Message: "Select Command: ",
-			Options: setAccountsCommand,
+			Options: setGasCommand,
 		}
 
 		answerIndex := 0
@@ -49,12 +47,14 @@ var SetAccountsCmd = &cobra.Command{
 		var signedTx *types.Transaction
 
 		switch answerIndex {
-		case setL1PricingRewardRecipient:
-			client, signedTx = SetL1PricingRewardRecipient()
-		case setInfraFeeAccount:
-			client, signedTx = SetInfraFeeAccount()
-		case setNetworkFeeAccount:
-			client, signedTx = SetNetworkFeeAccount()
+		case setL2BaseFee:
+			client, signedTx = SetL2BaseFee()
+		case setL1PricePerUnit:
+			client, signedTx = SetL1PricePerUnit()
+		case setMinimumL2BaseFee:
+			client, signedTx = SetMinimumL2BaseFee()
+		case releaseL1PricerSurplusFunds:
+			client, signedTx = ReleaseL1PricerSurplusFunds()
 		}
 
 		txResponse, _, err := client.TransactionByHash(context.Background(), signedTx.Hash())
@@ -76,12 +76,8 @@ var SetAccountsCmd = &cobra.Command{
 	},
 }
 
-func init() {
-
-}
-
-func SetL1PricingRewardRecipient() (*ethclient.Client, *types.Transaction) {
-	newRewarderAccount, err := prompt.EnterAddress("new L1 Rewarder account")
+func SetL2BaseFee() (*ethclient.Client, *types.Transaction) {
+	newL2BaseFeeWei, err := prompt.EnterValue("new L2 base fee")
 
 	if err != nil {
 		log.Fatal(err)
@@ -97,7 +93,7 @@ func SetL1PricingRewardRecipient() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	signedTx, err := ArbOwner.SetL1PricingRewardRecipient(auth, common.HexToAddress(newRewarderAccount))
+	signedTx, err := ArbOwner.SetL2BaseFee(auth, newL2BaseFeeWei)
 
 	if err != nil {
 		log.Fatal(err)
@@ -106,8 +102,8 @@ func SetL1PricingRewardRecipient() (*ethclient.Client, *types.Transaction) {
 	return client, signedTx
 }
 
-func SetInfraFeeAccount() (*ethclient.Client, *types.Transaction) {
-	newInfraAccount, err := prompt.EnterAddress("new infra account")
+func SetL1PricePerUnit() (*ethclient.Client, *types.Transaction) {
+	newL1PricePerUnit, err := prompt.EnterValue("new L1 Price Per Unit")
 
 	if err != nil {
 		log.Fatal(err)
@@ -123,7 +119,7 @@ func SetInfraFeeAccount() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	signedTx, err := ArbOwner.SetInfraFeeAccount(auth, common.HexToAddress(newInfraAccount))
+	signedTx, err := ArbOwner.SetL1PricePerUnit(auth, newL1PricePerUnit)
 
 	if err != nil {
 		log.Fatal(err)
@@ -132,8 +128,8 @@ func SetInfraFeeAccount() (*ethclient.Client, *types.Transaction) {
 	return client, signedTx
 }
 
-func SetNetworkFeeAccount() (*ethclient.Client, *types.Transaction) {
-	newInfraAccount, err := prompt.EnterAddress("new Network Fee account")
+func SetMinimumL2BaseFee() (*ethclient.Client, *types.Transaction) {
+	newMinBaseFee, err := prompt.EnterValue("new min L2 base fee")
 
 	if err != nil {
 		log.Fatal(err)
@@ -149,8 +145,44 @@ func SetNetworkFeeAccount() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	signedTx, err := ArbOwner.SetNetworkFeeAccount(auth, common.HexToAddress(newInfraAccount))
+	signedTx, err := ArbOwner.SetMinimumL2BaseFee(auth, newMinBaseFee)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return client, signedTx
+}
+
+func ReleaseL1PricerSurplusFunds() (*ethclient.Client, *types.Transaction) {
+	// newL1PricePerUnit, err := prompt.EnterValue("new L1 Price Per Unit")
+
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	client, auth, err := ethLib.GenerateAuth()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(ethLib.Callopts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(L1FeesAvailable.String())
+	signedTx, err := ArbOwner.ReleaseL1PricerSurplusFunds(auth, L1FeesAvailable)
 	if err != nil {
 		log.Fatal(err)
 	}

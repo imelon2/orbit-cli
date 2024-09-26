@@ -42,4 +42,6 @@ func init() {
 	SystemCmd.AddCommand(GasCmd)
 	SystemCmd.AddCommand(AccountsCmd)
 	SystemCmd.AddCommand(SetAccountsCmd)
+	SystemCmd.AddCommand(VaultCmd)
+	SystemCmd.AddCommand(SetGasCmd)
 }

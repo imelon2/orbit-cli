@@ -65,14 +65,14 @@ var GasCmd = &cobra.Command{
 		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(ethLib.Callopts)
 		PricingInertia, err := ArbGasInfo.GetPricingInertia(ethLib.Callopts)
 
-		header, err := client.HeaderByNumber(context.Background(), nil /* Latest */)
+		block, err := client.BlockByNumber(context.Background(), nil /* Latest */)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Print("\n")
 		fmt.Print(utils.BoldGreenString("#### L1 L2 Gas Price Info ####\n"))
-		fmt.Printf("Current L2 Base Fee (block)  : %d\n", header.BaseFee.Uint64())
+		fmt.Printf("Current L2 Base Fee (block)  : %d\n", block.BaseFee().Uint64())
 		fmt.Printf("L1BaseFeeEstimate            : %d\n", L1BaseFeeEstimate)
 		fmt.Printf("LastL1PricingUpdateTime      : %d\n", LastL1PricingUpdateTime)
 		fmt.Print("\n\n")

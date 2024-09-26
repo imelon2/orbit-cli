@@ -23,7 +23,7 @@ var SendCmd = &cobra.Command{
 	Short: "Send ETH from select wallet",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		value, err := prompt.EnterValue()
+		value, err := prompt.EnterValue("")
 		to, err := prompt.EnterRecipient()
 		toAddress := common.HexToAddress(to)
 
@@ -41,7 +41,7 @@ var SendCmd = &cobra.Command{
 		client, err := ethclient.Dial(provider)
 
 		nonce, err := client.PendingNonceAt(context.Background(), account.Address)
-		gasLimit := uint64(21000)
+		gasLimit := uint64(23000)
 		gasPrice, err := client.SuggestGasPrice(context.Background())
 
 		tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, nil /* calldata */)

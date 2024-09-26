@@ -22,7 +22,7 @@ var AliasCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to get SelectChainTo: %v", err)
 		}
-		address, err := prompt.EnterAddress()
+		address, err := prompt.EnterAddress("aliasing")
 		if err != nil {
 			log.Fatalf("Failed to get EnterAddress: %v", err)
 		}

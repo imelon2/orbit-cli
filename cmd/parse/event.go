@@ -4,7 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"math/big"
@@ -15,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/hokaccha/go-prettyjson"
+	ethlib "github.com/imelon2/orbit-cli/ethLib"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
@@ -35,32 +35,40 @@ var EventCmd = &cobra.Command{
 
 		abiPath := utils.GetAbiDir()
 		_abi, _ := os.ReadFile(abiPath)
-		parsedABI, err := abi.JSON(strings.NewReader(string(_abi)))
 
+		abi, err := ethlib.GetAbi(strings.NewReader(string(_abi)))
 		if err != nil {
-			log.Fatalf("Failed to get ABI: %v", err)
+			log.Fatal(err)
 		}
+
 		provider, err := prompt.SelectProvider()
 		if err != nil {
-			log.Fatalf("Failed to get provider: %v", err)
+			log.Fatal(err)
 		}
-		txHash, err := prompt.EnterTransactionHash()
+
+		hash, err := prompt.EnterTransactionHash()
 		if err != nil {
-			log.Fatalf("Failed to get txHash: %v", err)
+			log.Fatal(err)
 		}
 
 		client, err := ethclient.Dial(provider)
 		if err != nil {
 			log.Fatal(err)
 		}
-		tx, err := client.TransactionReceipt(context.Background(), txHash)
+
+		txHash := ethlib.NewTransactionHash(client, hash)
+
+		tx, err := txHash.GetTransactionReceipt()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		resultJson := make([]EventLog, 0)
 		for _, data := range tx.Logs {
 			var eventHashTopic = data.Topics[0]
 			var eventJson EventLog
 
-			event, _ := parsedABI.EventByID(eventHashTopic)
+			event, _ := abi.EventByID(eventHashTopic)
 			data.Topics = data.Topics[1:]
 
 			eventJson.Name = event.RawName
@@ -73,7 +81,7 @@ var EventCmd = &cobra.Command{
 			for j, topic := range data.Topics {
 				data, err := decodeIndexedInput(event.Inputs[j], topic.Bytes())
 				if err != nil {
-					log.Fatalf("Failed to unpack calldata: %v", err)
+					log.Fatalf("Failed to decode unpack topics: %v", err)
 				}
 				eventData[event.Inputs[j].Name] = data
 
@@ -82,7 +90,7 @@ var EventCmd = &cobra.Command{
 
 			inter, err := event.Inputs.Unpack(data.Data)
 			if err != nil {
-				log.Fatalf("Failed to unpack calldata: %v", err)
+				log.Fatalf("Failed to decode unpack event: %v", err)
 			}
 
 			for k, data := range inter {
@@ -95,8 +103,6 @@ var EventCmd = &cobra.Command{
 
 		formatter := prettyjson.NewFormatter()
 		formatter.Indent = 2
-		// formatter.KeyColor.DisableColor()
-
 		coloredJson, err := formatter.Marshal(resultJson)
 		if err != nil {
 			log.Fatalf("Failed to Marshal decoded event: %v", err)

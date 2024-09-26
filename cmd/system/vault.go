@@ -90,8 +90,8 @@ var VaultCmd = &cobra.Command{
 		L1PricerFundsPool.Quo(L1PricerFundsPool, big.NewFloat(1e18))
 
 		data := [][]string{
-			[]string{fmt.Sprintf("%.18f ETH", networkFee), fmt.Sprintf("%.18f ETH", infraFee), fmt.Sprintf("%.18f ETH", L1PricerFundsPool), fmt.Sprintf("%.18f ETH", l1Reward)},
-			[]string{networkFeeAccount.Hex(), infraFeeAccount.Hex(), ethLib.L1PricerFundsPool.Hex(), l1RewardRecipient.Hex()},
+			{fmt.Sprintf("%.18f ETH", networkFee), fmt.Sprintf("%.18f ETH", infraFee), fmt.Sprintf("%.18f ETH", L1PricerFundsPool), fmt.Sprintf("%.18f ETH", l1Reward)},
+			{networkFeeAccount.Hex(), infraFeeAccount.Hex(), ethLib.L1PricerFundsPool.Hex(), l1RewardRecipient.Hex()},
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Network Fee", "Infra Fee", "L1 PricerFunds Pool", "l1 Rewarder"})
@@ -100,7 +100,6 @@ var VaultCmd = &cobra.Command{
 			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
 			tablewriter.Colors{tablewriter.FgBlueColor, tablewriter.Bold},
 		)
-		// table.SetFooter([]string{networkFeeAccount.Hex(), infraFeeAccount.Hex(), ethLib.L1PricerFundsPool.Hex(), l1RewardRecipient.Hex()})
 		table.SetRowLine(true)
 		table.AppendBulk(data) // Add Bulk Data
 		table.Render()

@@ -26,7 +26,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		providerOrCalldata, isProvider, err := prompt.SelectProviderOrBytes()
+		providerOrBytes, isProvider, err := prompt.SelectProviderOrBytes()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -35,7 +35,7 @@ to quickly create a Cobra application.`,
 		if isProvider {
 			fmt.Print("\n\nTODO\n\n")
 			return
-			client, err := ethclient.Dial(providerOrCalldata)
+			client, err := ethclient.Dial(providerOrBytes)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -47,23 +47,21 @@ to quickly create a Cobra application.`,
 
 			tx, _, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
-				fmt.Errorf("Failed to get TransactionByHash: %v", err)
-				return
+				log.Fatalf("Failed to get TransactionByHash: %v", err)
 			}
 			data = tx.Data()
 
 		} else {
-			providerOrCalldata = providerOrCalldata[2:]
-
-			calldataBytes, err := hex.DecodeString(providerOrCalldata)
+			providerOrBytes = providerOrBytes[2:] // remove 0x
+			calldataBytes, err := hex.DecodeString(providerOrBytes)
 			if err != nil {
-				log.Fatalf("calldata 변환 에러: %v", err)
+				log.Fatalf("failed decode bytes data: %v", err)
 			}
+
 			data = calldataBytes
 		}
 
 		retry := utils.ParseRetryableMessage(data)
-
 		utils.PrintPrettyJson(retry)
 	},
 }

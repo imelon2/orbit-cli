@@ -45,33 +45,29 @@ var SetAccountsCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		var client *ethclient.Client
-		var signedTx *types.Transaction
+		ArbOwnerLibs := NewArbOwnerLibsPrompt()
+		client := ArbOwnerLibs.client
 
+		var response *types.Transaction
 		switch answerIndex {
 		case setL1PricingRewardRecipient:
-			client, signedTx = SetL1PricingRewardRecipient()
+			response = ArbOwnerLibs.SetL1PricingRewardRecipient()
 		case setInfraFeeAccount:
-			client, signedTx = SetInfraFeeAccount()
+			response = ArbOwnerLibs.SetInfraFeeAccount()
 		case setNetworkFeeAccount:
-			client, signedTx = SetNetworkFeeAccount()
-		}
-
-		txResponse, _, err := client.TransactionByHash(context.Background(), signedTx.Hash())
-		if err != nil {
-			log.Fatal(err)
+			response = ArbOwnerLibs.SetNetworkFeeAccount()
 		}
 
 		fmt.Print("\n\nTransaction Response: \n")
-		utils.PrintPrettyJson(txResponse)
+		utils.PrintPrettyJson(response)
 		fmt.Print("\n\nWait Mined Transaction ... \n\n")
 
-		receipt, err := bind.WaitMined(context.Background(), client, signedTx)
+		receipt, err := bind.WaitMined(context.Background(), client, response)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println("Transaction receipt: \n")
+		fmt.Print("Transaction receipt: \n")
 		utils.PrintPrettyJson(receipt)
 	},
 }
@@ -80,80 +76,83 @@ func init() {
 
 }
 
-func SetL1PricingRewardRecipient() (*ethclient.Client, *types.Transaction) {
+type ArbOwnerLibs struct {
+	client   *ethclient.Client
+	auth     *bind.TransactOpts
+	ArbOwner *precompilesgen.ArbOwner
+}
+
+func NewArbOwnerLibs(client *ethclient.Client) *ArbOwnerLibs {
+	new := new(ArbOwnerLibs)
+	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	new.ArbOwner = ArbOwner
+	return new
+}
+
+func NewArbOwnerLibsPrompt() *ArbOwnerLibs {
+	new := new(ArbOwnerLibs)
+
+	client, auth, err := ethLib.GenerateAuth()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	new.client = client
+	new.auth = auth
+	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	new.ArbOwner = ArbOwner
+
+	return new
+}
+
+func (lib *ArbOwnerLibs) SetL1PricingRewardRecipient() *types.Transaction {
 	newRewarderAccount, err := prompt.EnterAddress("new L1 Rewarder account")
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
+	response, err := lib.ArbOwner.SetL1PricingRewardRecipient(lib.auth, common.HexToAddress(newRewarderAccount))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signedTx, err := ArbOwner.SetL1PricingRewardRecipient(auth, common.HexToAddress(newRewarderAccount))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client, signedTx
+	return response
 }
 
-func SetInfraFeeAccount() (*ethclient.Client, *types.Transaction) {
+func (lib *ArbOwnerLibs) SetInfraFeeAccount() *types.Transaction {
 	newInfraAccount, err := prompt.EnterAddress("new infra account")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signedTx, err := lib.ArbOwner.SetInfraFeeAccount(lib.auth, common.HexToAddress(newInfraAccount))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signedTx, err := ArbOwner.SetInfraFeeAccount(auth, common.HexToAddress(newInfraAccount))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client, signedTx
+	return signedTx
 }
 
-func SetNetworkFeeAccount() (*ethclient.Client, *types.Transaction) {
+func (lib *ArbOwnerLibs) SetNetworkFeeAccount() *types.Transaction {
 	newInfraAccount, err := prompt.EnterAddress("new Network Fee account")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	signedTx, err := lib.ArbOwner.SetNetworkFeeAccount(lib.auth, common.HexToAddress(newInfraAccount))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signedTx, err := ArbOwner.SetNetworkFeeAccount(auth, common.HexToAddress(newInfraAccount))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client, signedTx
+	return signedTx
 }

@@ -20,21 +20,53 @@ var Callopts = &bind.CallOpts{
 	Context: nil,   // 컨텍스트가 필요한 경우 (예: 시간 초과)
 }
 
+type TransactionHash struct {
+	client *ethclient.Client
+	hash   common.Hash
+}
+
+func NewTransactionHash(client *ethclient.Client, hash common.Hash) *TransactionHash {
+	newTransactionHash := new(TransactionHash)
+	newTransactionHash.hash = hash
+	newTransactionHash.client = client
+	return newTransactionHash
+}
+
+func (txHash TransactionHash) GetTransactionByHash() (*types.Transaction, bool, error) {
+	tx, isPending, err := txHash.client.TransactionByHash(context.Background(), txHash.hash)
+	if err == ethereum.NotFound {
+		return nil, isPending, fmt.Errorf("transaction hash %v not found: %d", txHash.hash.Hex(), err)
+	} else if err != nil {
+		return nil, isPending, fmt.Errorf("failed to get TransactionByHash: %d", err)
+	}
+	return tx, isPending, nil
+}
+
+func (txHash TransactionHash) GetTransactionReceipt() (*types.Receipt, error) {
+	tx, err := txHash.client.TransactionReceipt(context.Background(), txHash.hash)
+	if err == ethereum.NotFound {
+		return nil, fmt.Errorf("transaction hash %v not found: %d", txHash.hash.Hex(), err)
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to get TransactionReceipt: %d", err)
+	}
+	return tx, nil
+}
+
 func GenerateAuth() (*ethclient.Client, *bind.TransactOpts, error) {
 
 	provider, err := prompt.SelectProvider()
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - SelectProvider failed %v\n", err)
+		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - ethclient failed %v\n", err)
+		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	_, ks, account, err := prompt.SelectWalletForSign()
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - SelectWalletForSign failed %v\n", err)
+		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	chainID, err := client.NetworkID(context.Background())

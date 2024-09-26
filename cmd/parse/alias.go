@@ -26,9 +26,7 @@ var AliasCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		aliasing := utils.Alias(common.HexToAddress(address), isParentToChild)
-
 		fmt.Printf("\n\nAlising Address : %s\n\n", aliasing.Hex())
 	},
 }

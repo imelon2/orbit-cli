@@ -20,11 +20,11 @@ var AliasCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		isParentToChild, err := prompt.SelectChainTo()
 		if err != nil {
-			log.Fatalf("Failed to get SelectChainTo: %v", err)
+			log.Fatal(err)
 		}
 		address, err := prompt.EnterAddress("aliasing")
 		if err != nil {
-			log.Fatalf("Failed to get EnterAddress: %v", err)
+			log.Fatal(err)
 		}
 
 		aliasing := utils.Alias(common.HexToAddress(address), isParentToChild)

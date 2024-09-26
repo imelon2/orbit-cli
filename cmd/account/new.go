@@ -21,7 +21,7 @@ var NewCmd = &cobra.Command{
 
 		pw, err := prompt.EnterPassword()
 		if err != nil {
-			log.Fatalf("EnterPassword Error : %v", err)
+			log.Fatal(err)
 		}
 
 		path := utils.GetKeystoreDir()

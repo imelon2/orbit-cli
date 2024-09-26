@@ -3,7 +3,6 @@ package prompt
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -28,6 +27,15 @@ const (
 	LAST_CALLDATA_STRING = "< Enter Calldata type of bytes >"
 )
 
+const (
+	PROMPT_SELECT_WALLET_ERROR   = "Failed Select Wallet"
+	PROMPT_SELECT_PROVIDER_ERROR = "Failed Select Provider"
+	PROMPT_SELECT_CHAIN_ERROR    = "Failed Select Chain"
+
+	PROMPT_ENTER_PROVIDER_URL_ERROR     = "Failed Enter Provider"
+	PROMPT_ENTER_TRANSACTION_HASH_ERROR = "Failed Enter Transaction Hash"
+)
+
 func SelectWallet() (string, error) {
 	path := utils.GetKeystoreDir()
 	ks := keystore.NewKeyStore(path, keystore.StandardScryptN, keystore.StandardScryptP)
@@ -47,7 +55,7 @@ func SelectWallet() (string, error) {
 	var selected string
 	err := survey.AskOne(qs, &selected)
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v\n", err)
+		return "", fmt.Errorf("%v : %v\n", PROMPT_SELECT_WALLET_ERROR, err)
 	}
 
 	selectedWallet := selected
@@ -56,7 +64,7 @@ func SelectWallet() (string, error) {
 
 		selected, err := EnterAddress("wanted")
 		if err != nil {
-			return "", fmt.Errorf("Prompt failed %v\n", err)
+			return "", err
 		}
 		selectedWallet = selected
 	}
@@ -83,7 +91,7 @@ func SelectWalletForSign() (accounts.Wallet, *keystore.KeyStore, accounts.Accoun
 	answerIndex := 0
 	err := survey.AskOne(qs, &answerIndex)
 	if err != nil {
-		return nil, nil, accounts.Account{}, fmt.Errorf("Prompt failed %v\n", err)
+		return nil, nil, accounts.Account{}, fmt.Errorf("%v : %v\n", PROMPT_SELECT_WALLET_ERROR, err)
 	}
 
 	var pw string = ""
@@ -96,7 +104,6 @@ func SelectWalletForSign() (accounts.Wallet, *keystore.KeyStore, accounts.Accoun
 				Name:   "Password",
 				Prompt: &survey.Password{Message: "Enter the password [for skip <ENTER>]: "},
 				Validate: func(val interface{}) error {
-
 					err = ks.Unlock(_accounts[answerIndex], val.(string))
 
 					if err == keystore.ErrDecrypt {
@@ -109,7 +116,7 @@ func SelectWalletForSign() (accounts.Wallet, *keystore.KeyStore, accounts.Accoun
 		}
 		err = survey.Ask(validationQs, &pw)
 	} else if err != nil {
-		return nil, nil, accounts.Account{}, fmt.Errorf("SelectWalletForSign failed %v\n", err)
+		return nil, nil, accounts.Account{}, fmt.Errorf("Failed Select Wallet For Sign :  %v\n", err)
 	}
 
 	wallet = ks.Wallets()[answerIndex]
@@ -149,7 +156,7 @@ func SelectCommand(dirPath string) (string, error) {
 	err = survey.AskOne(qs, &selected)
 
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v\n", err)
+		return "", fmt.Errorf("Failed Select Command : %v\n", err)
 	}
 
 	return selected, nil
@@ -176,7 +183,7 @@ func SelectProvider() (string, error) {
 
 	err := survey.AskOne(selectQs, &selectedChain)
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v\n", err)
+		return "", fmt.Errorf("%v : %v\n", PROMPT_SELECT_PROVIDER_ERROR, err)
 	}
 
 	if selectedChain == LAST_PROVIDER_STRING {
@@ -186,7 +193,7 @@ func SelectProvider() (string, error) {
 
 		err := survey.AskOne(inputQs, &selectedProvider)
 		if err != nil {
-			return "", fmt.Errorf("Prompt failed %v\n", err)
+			return "", fmt.Errorf("%v : %v\n", PROMPT_ENTER_PROVIDER_URL_ERROR, err)
 		}
 
 	} else {
@@ -216,13 +223,13 @@ func SelectProvider() (string, error) {
 		answerIndex := 0
 		err := survey.AskOne(qs, &answerIndex)
 		if err != nil {
-			return "", fmt.Errorf("Prompt failed %v\n", err)
+			return "", fmt.Errorf("%v : %v\n", PROMPT_SELECT_PROVIDER_ERROR, err)
 		}
 		selectedProvider = providers[answerIndex].Url
 
 		if selectedProvider == "" {
 			errM := selectedChain + "-" + providers[answerIndex].Name + " Chain No Provider"
-			log.Fatal(errM)
+			return "", fmt.Errorf("%v\n", errM)
 		}
 	}
 
@@ -250,7 +257,7 @@ func SelectProviderOrBytes() (string, bool, error) {
 
 	err := survey.AskOne(selectQs, &selectedChain)
 	if err != nil {
-		return "", false, fmt.Errorf("Prompt failed %v\n", err)
+		return "", false, fmt.Errorf("%v : %v\n", PROMPT_SELECT_CHAIN_ERROR, err)
 	}
 
 	if selectedChain == LAST_CALLDATA_STRING {
@@ -260,7 +267,7 @@ func SelectProviderOrBytes() (string, bool, error) {
 		err := survey.AskOne(inputQs, &selectedProvider)
 
 		if err != nil {
-			return "", false, fmt.Errorf("Prompt failed %v\n", err)
+			return "", false, fmt.Errorf("Failed Enter Bytes %v\n", err)
 		}
 
 		return selectedProvider, false, nil
@@ -272,7 +279,7 @@ func SelectProviderOrBytes() (string, bool, error) {
 
 		err := survey.AskOne(inputQs, &selectedProvider)
 		if err != nil {
-			return "", false, fmt.Errorf("Prompt failed %v\n", err)
+			return "", false, fmt.Errorf("%v : %v\n", PROMPT_ENTER_PROVIDER_URL_ERROR, err)
 		}
 
 	} else {
@@ -302,13 +309,13 @@ func SelectProviderOrBytes() (string, bool, error) {
 		answerIndex := 0
 		err := survey.AskOne(qs, &answerIndex)
 		if err != nil {
-			return "", false, fmt.Errorf("Prompt failed %v\n", err)
+			return "", false, fmt.Errorf("%v : %v\n", PROMPT_SELECT_PROVIDER_ERROR, err)
 		}
 		selectedProvider = providers[answerIndex].Url
 
 		if selectedProvider == "" {
 			errM := selectedChain + "-" + providers[answerIndex].Name + " Chain No Provider"
-			log.Fatal(errM)
+			return "", false, fmt.Errorf("%v\n", errM)
 		}
 	}
 
@@ -330,7 +337,7 @@ func SelectChainTo() (bool, error) {
 	err := survey.AskOne(inputQs, &answerIndex)
 
 	if err != nil {
-		return false, fmt.Errorf("Prompt failed %v\n", err)
+		return false, fmt.Errorf("Failed Select Direction About Chain : %v\n", err)
 	}
 
 	if answerIndex == 0 {
@@ -358,7 +365,7 @@ func EnterAddress(name string) (string, error) {
 	var selectedAddress string
 	err := survey.Ask(validationQs, &selectedAddress)
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v\n", err)
+		return "", fmt.Errorf("Failed Enter Address :  %v\n", err)
 	}
 
 	return selectedAddress, nil
@@ -383,7 +390,7 @@ func EnterTransactionHash() (common.Hash, error) {
 	var selected string
 	err := survey.Ask(validationQs, &selected)
 	if err != nil {
-		return common.HexToHash(""), fmt.Errorf("EnterTransactionHash Prompt failed %v\n", err)
+		return common.HexToHash(""), fmt.Errorf("%v : %v\n", PROMPT_ENTER_TRANSACTION_HASH_ERROR, err)
 	}
 
 	return common.HexToHash(selected), nil
@@ -408,7 +415,7 @@ func EnterTransactionHashOrBytes() (string, error) {
 	err := survey.Ask(validationQs, &selected)
 
 	if err != nil {
-		return "", fmt.Errorf("EnterTransactionHash Prompt failed %v\n", err)
+		return "", fmt.Errorf("%v : %v\n", PROMPT_ENTER_TRANSACTION_HASH_ERROR, err)
 	}
 
 	return selected, nil
@@ -433,7 +440,7 @@ func EnterPrivateKey() (string, error) {
 	err := survey.Ask(validationQs, &privateKey)
 
 	if err != nil {
-		return "", fmt.Errorf("EnterPrivateKey Prompt failed %v\n", err)
+		return "", fmt.Errorf("Failed Enter PrivateKey %v\n", err)
 	}
 
 	return privateKey, nil
@@ -453,7 +460,7 @@ func EnterPassword() (string, error) {
 	}))
 
 	if err != nil {
-		return "", fmt.Errorf("EnterPassword Prompt failed %v\n", err)
+		return "", fmt.Errorf("Failed Enter Password %v\n", err)
 	}
 
 	return password, nil
@@ -471,7 +478,7 @@ func EnterRecipient() (string, error) {
 	}))
 
 	if err != nil {
-		return "", fmt.Errorf("EnterRecipient Prompt failed %v\n", err)
+		return "", fmt.Errorf("Failed Enter Recipient : %v\n", err)
 	}
 
 	return to, nil
@@ -484,7 +491,7 @@ func EnterValue(name string) (*big.Int, error) {
 	err := survey.AskOne(valueQs, &value)
 
 	if err != nil {
-		return nil, fmt.Errorf("EnterValue Prompt failed %v\n", err)
+		return nil, fmt.Errorf("Failed Enter Value : %v\n", err)
 	}
 
 	etherInWei := new(big.Float)

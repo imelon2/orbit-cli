@@ -24,11 +24,18 @@ var SendCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		value, err := prompt.EnterValue("")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		to, err := prompt.EnterRecipient()
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		toAddress := common.HexToAddress(to)
 
 		wallet, _, account, err := prompt.SelectWalletForSign()
-
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,14 +46,23 @@ var SendCmd = &cobra.Command{
 		}
 
 		client, err := ethclient.Dial(provider)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		nonce, err := client.PendingNonceAt(context.Background(), account.Address)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		gasLimit := uint64(23000)
 		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, nil /* calldata */)
 		chainID, err := client.NetworkID(context.Background())
-
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -58,7 +74,6 @@ var SendCmd = &cobra.Command{
 
 		err = client.SendTransaction(context.Background(), signedTx)
 		if err != nil {
-			fmt.Println("SendTransaction")
 			log.Fatal(err)
 		}
 

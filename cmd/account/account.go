@@ -26,12 +26,12 @@ var AccountCmd = &cobra.Command{
 		selected, err := prompt.SelectCommand(root)
 
 		if err != nil {
-			log.Fatal("bad SelectCommand")
+			log.Fatal(err)
 		}
 
 		nextCmd, _, err := cmd.Find([]string{selected})
 		if err != nil {
-			log.Fatal("bad nextCmd : ", err)
+			log.Fatal(err)
 		}
 
 		nextCmd.Run(nextCmd, args)

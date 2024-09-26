@@ -23,18 +23,18 @@ var ImportCmd = &cobra.Command{
 
 		pk, err := prompt.EnterPrivateKey()
 		if err != nil {
-			log.Fatalf("EnterPrivateKey Error : %v", err)
+			log.Fatal(err)
 		}
 
 		privateKey, err := crypto.ToECDSA(common.FromHex(pk))
 
 		if err != nil {
-			log.Fatalf("HexToECDSA Erro : %v", err)
+			log.Fatal(err)
 		}
 
 		pw, err := prompt.EnterPassword()
 		if err != nil {
-			log.Fatalf("EnterPassword Error : %v", err)
+			log.Fatal(err)
 		}
 
 		path := utils.GetKeystoreDir()

@@ -23,10 +23,9 @@ const (
 	setL2BaseFee = iota
 	setL1PricePerUnit
 	setMinimumL2BaseFee
-	releaseL1PricerSurplusFunds
 )
 
-var setGasCommand = []string{"SetL2BaseFee", "SetL1PricePerUnit", "SetMinimumL2BaseFee", "ReleaseL1PricerSurplusFunds"}
+var setGasCommand = []string{"SetL2BaseFee", "SetL1PricePerUnit", "SetMinimumL2BaseFee"}
 
 var SetGasCmd = &cobra.Command{
 	Use:   "setGas",
@@ -53,17 +52,10 @@ var SetGasCmd = &cobra.Command{
 			client, signedTx = SetL1PricePerUnit()
 		case setMinimumL2BaseFee:
 			client, signedTx = SetMinimumL2BaseFee()
-		case releaseL1PricerSurplusFunds:
-			client, signedTx = ReleaseL1PricerSurplusFunds()
-		}
-
-		txResponse, _, err := client.TransactionByHash(context.Background(), signedTx.Hash())
-		if err != nil {
-			log.Fatal(err)
 		}
 
 		fmt.Print("\n\nTransaction Response: \n")
-		utils.PrintPrettyJson(txResponse)
+		utils.PrintPrettyJson(signedTx)
 		fmt.Print("\n\nWait Mined Transaction ... \n\n")
 
 		receipt, err := bind.WaitMined(context.Background(), client, signedTx)
@@ -147,42 +139,6 @@ func SetMinimumL2BaseFee() (*ethclient.Client, *types.Transaction) {
 
 	signedTx, err := ArbOwner.SetMinimumL2BaseFee(auth, newMinBaseFee)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client, signedTx
-}
-
-func ReleaseL1PricerSurplusFunds() (*ethclient.Client, *types.Transaction) {
-	// newL1PricePerUnit, err := prompt.EnterValue("new L1 Price Per Unit")
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	client, auth, err := ethLib.GenerateAuth()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(ethLib.Callopts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Print(L1FeesAvailable.String())
-	signedTx, err := ArbOwner.ReleaseL1PricerSurplusFunds(auth, L1FeesAvailable)
 	if err != nil {
 		log.Fatal(err)
 	}

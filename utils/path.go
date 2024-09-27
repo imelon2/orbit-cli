@@ -31,3 +31,11 @@ func GetKeystoreDir() string {
 	keystorePath := filepath.Join(parent, "keystore", "accounts")
 	return keystorePath
 }
+
+func GetContractNetworkDir() string {
+	_, filename, _, _ := runtime.Caller(0)
+	root := filepath.Dir(filename)
+	parent := filepath.Dir(root)
+	networkPath := filepath.Join(parent, "contractgen", "network")
+	return networkPath
+}

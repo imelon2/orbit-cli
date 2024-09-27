@@ -26,6 +26,7 @@ var AccountsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		client, err := ethclient.Dial(provider)
 		if err != nil {
 			log.Fatal(err)

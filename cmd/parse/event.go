@@ -64,40 +64,42 @@ var EventCmd = &cobra.Command{
 		}
 
 		resultJson := make([]EventLog, 0)
-		for _, data := range tx.Logs {
-			var eventHashTopic = data.Topics[0]
+		for _, eLog := range tx.Logs {
+			var eventHashTopic = eLog.Topics[0]
 			var eventJson EventLog
 
 			event, _ := abi.EventByID(eventHashTopic)
-			data.Topics = data.Topics[1:]
+			eLog.Topics = eLog.Topics[1:]
 
 			eventJson.Name = event.RawName
 			eventJson.Signature = event.Sig
 			eventJson.Topic = eventHashTopic.Hex()
 
-			eventData := make(map[string]interface{})
+			logDatas, err := event.Inputs.Unpack(eLog.Data)
 
-			lastIndex := 0
-			for j, topic := range data.Topics {
-				data, err := decodeIndexedInput(event.Inputs[j], topic.Bytes())
-				if err != nil {
-					log.Fatalf("Failed to decode unpack topics: %v", err)
-				}
-				eventData[event.Inputs[j].Name] = data
-
-				lastIndex++
-			}
-
-			inter, err := event.Inputs.Unpack(data.Data)
 			if err != nil {
-				log.Fatalf("Failed to decode unpack event: %v", err)
+				log.Fatalf("failed to decode unpack event: %v", err)
 			}
 
-			for k, data := range inter {
-				eventData[event.Inputs[lastIndex+k].Name] = data
+			eventData := make(map[string]interface{})
+			dataIndex := 0
+			topicIndex := 0
+			for _, eventInput := range event.Inputs {
+				if eventInput.Indexed {
+					topic := eLog.Topics[topicIndex]
+					data, err := decodeIndexedInput(eventInput, topic.Bytes())
+					if err != nil {
+						log.Fatalf("Failed to decode unpack topics: %v", err)
+					}
+					eventData[eventInput.Name] = data
+					topicIndex++
+				} else {
+					eventData[eventInput.Name] = logDatas[dataIndex]
+					dataIndex++
+				}
 			}
+
 			eventJson.Params = utils.ConvertBytesToHex(eventData)
-
 			resultJson = append(resultJson, eventJson)
 		}
 

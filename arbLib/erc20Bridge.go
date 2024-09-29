@@ -39,6 +39,6 @@ func NewRouter(client *ethclient.Client, addr common.Address) (Router, error) {
 }
 
 func (r Router) DepositFunc(params *OutboundTransferPrams) (*types.Transaction, error) {
-	r.Auth.NoSend = true // for estimate
+	r.Auth.NoSend = false // for estimate
 	return r.Router.OutboundTransfer(r.Auth, params.Token, params.To, params.Amount, params.MaxGas, params.GasPriceBid, params.Data)
 }

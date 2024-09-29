@@ -23,6 +23,11 @@ func IsTransaction(addr string) bool {
 	return re.MatchString(addr)
 }
 
+func IsBytes(addr string) bool {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]$")
+	return re.MatchString(addr)
+}
+
 func IsPrivateKey(addr string) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]{64}$")
 	return re.MatchString(addr)
@@ -49,10 +54,8 @@ func Alias(address common.Address, forward bool) common.Address {
 	var result *big.Int
 	if forward {
 		result = new(big.Int).Add(originalAddress, AddressAliasOffset)
-		// return common.BigToAddress(new(big.Int).Add(address.Big(), AddressAliasOffset))
 	} else {
 		result = new(big.Int).Sub(originalAddress, AddressAliasOffset)
-		// return common.BigToAddress(new(big.Int).Sub(AddressAliasOffset, address.Big()))
 	}
 
 	resultUint := new(big.Int).And(result, big.NewInt(0).Sub(new(big.Int).Lsh(big.NewInt(1), ADDRESS_BIT_LENGTH), big.NewInt(1)))

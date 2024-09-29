@@ -1,6 +1,17 @@
 package contractgen
 
-import "github.com/ethereum/go-ethereum/common"
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/imelon2/orbit-cli/utils"
+)
 
 type NetworkInfo struct {
 	ChainId        int         `json:"chainID"`
@@ -40,6 +51,78 @@ type Teleport struct {
 	L2ForwarderFactory common.Address `json:"l2ForwarderFactory"`
 }
 
-func NewNetworkInfo() {
+func genNetworkInfo() (map[string]NetworkInfo, error) {
+	path := utils.GetContractNetworkDir()
+	files, err := os.ReadDir(path)
 
+	if err != nil {
+		return nil, fmt.Errorf("failed to open JSON file: %s", err)
+	}
+
+	networks := make(map[string]NetworkInfo)
+
+	for _, file := range files {
+
+		jsonFile := filepath.Join(path, file.Name())
+		jsonData, err := os.Open(jsonFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open JSON file: %s", err)
+		}
+
+		byteValue, err := io.ReadAll(jsonData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read JSON file: %s", err)
+		}
+
+		var networkInfo NetworkInfo
+
+		err = json.Unmarshal(byteValue, &networkInfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal network info JSON: %s", err)
+		}
+
+		networks[file.Name()] = networkInfo
+	}
+
+	return networks, nil
+}
+
+func GetNetworkInfoByParent(client *ethclient.Client) (NetworkInfo, error) {
+	networks, err := genNetworkInfo()
+	if err != nil {
+		return NetworkInfo{}, err
+	}
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return NetworkInfo{}, fmt.Errorf("failed get Network ID %v", err)
+	}
+
+	for val := range networks {
+		if network := networks[val]; network.PartnerChainID == int(chainID.Int64()) {
+			return network, nil
+		}
+	}
+
+	return NetworkInfo{}, fmt.Errorf("there is no network info for chain id %d : %v", chainID, err)
+}
+
+func GetNetworkInfo(client *ethclient.Client) (NetworkInfo, error) {
+	networks, err := genNetworkInfo()
+	if err != nil {
+		return NetworkInfo{}, err
+	}
+
+	chainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return NetworkInfo{}, fmt.Errorf("failed get Network ID %v", err)
+	}
+
+	for val := range networks {
+		if network := networks[val]; network.ChainId == int(chainID.Int64()) {
+			return network, nil
+		}
+	}
+
+	return NetworkInfo{}, fmt.Errorf("there is no network info for chain id %d : %v", chainID, err)
 }

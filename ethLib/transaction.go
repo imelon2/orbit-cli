@@ -52,47 +52,46 @@ func (txHash TransactionHash) GetTransactionReceipt() (*types.Receipt, error) {
 	return tx, nil
 }
 
-func GenerateAuth() (*ethclient.Client, *bind.TransactOpts, error) {
+func GenerateAuth() (*ethclient.Client, *bind.TransactOpts, string, error) {
 
 	provider, err := prompt.SelectProvider()
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	_, ks, account, err := prompt.SelectWalletForSign()
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth : %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth : %v\n", err)
 	}
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - NetworkID failed %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth - NetworkID failed %v\n", err)
 	}
 
 	auth, err := bind.NewKeyStoreTransactorWithChainID(ks, account, chainID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - NewKeyStoreTransactorWithChainID failed %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth - NewKeyStoreTransactorWithChainID failed %v\n", err)
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), account.Address)
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - PendingNonceAt failed %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth - PendingNonceAt failed %v\n", err)
 	}
 	auth.Nonce = big.NewInt(int64(nonce))
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		return nil, nil, fmt.Errorf("GenerateAuth - SuggestGasPrice failed %v\n", err)
+		return nil, nil, "", fmt.Errorf("GenerateAuth - SuggestGasPrice failed %v\n", err)
 	}
 
 	auth.GasPrice = gasPrice
-
-	return client, auth, nil
+	return client, auth, provider, nil
 }
 
 func AsMessage(tx *types.Transaction, from common.Address) ethereum.CallMsg {

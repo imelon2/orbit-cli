@@ -16,19 +16,36 @@ $ make build
 ```bash
 $ orbit-cli
 ```
+## How to add account
+### Create new account
+```bash
+$ orbit-cli account new
 
-## Custom Provider
+? Enter the password [for skip <ENTER>] :  
+```
+
+### Import account from private key
+```bash
+$ orbit-cli account import
+
+? Enter the private key:  
+
+? Enter the password [for skip <ENTER>] :  
+```
+| If set a password, need to enter it if a signature is required for all step. but, if no set password, will be skip enter password
+
+## How to custom provider
 Enter Custom Provider Url on config.yml
 ```yml
 providers:
   local:
-    ethereum: http://localhost:8545
-    arbitrum: http://localhost:8547
-    orbit: http://localhost:3347
+    - http://localhost:8545 # Layer 1
+    - http://localhost:8547 # Layer 2
+    - http://localhost:3347 # Layer 2
   sepolia: # chain tag
-    ethereum: < Enter Sepolia Provider URL >
-    arbitrum: < Enter Sepolia Provider URL >
-    orbit: < Enter Sepolia Provider URL >
+    - < Enter Sepolia Provider URL >
+    - < Enter Sepolia Provider URL >
+    - < Enter Sepolia Provider URL >
 ```
 
 

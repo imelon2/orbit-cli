@@ -75,7 +75,7 @@ func SetL2BaseFee() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
+	client, auth, _, err := ethLib.GenerateAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func SetL1PricePerUnit() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
+	client, auth, _, err := ethLib.GenerateAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func SetMinimumL2BaseFee() (*ethclient.Client, *types.Transaction) {
 		log.Fatal(err)
 	}
 
-	client, auth, err := ethLib.GenerateAuth()
+	client, auth, _, err := ethLib.GenerateAuth()
 	if err != nil {
 		log.Fatal(err)
 	}

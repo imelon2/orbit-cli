@@ -8,3 +8,7 @@ solgen/abi/aggregateAbi.json
 config.yml
 
 keystore/accounts/*
+
+contractgen/network/*
+!contractgen/network/arbitrum-one.json
+!contractgen/network/arbitrum-sepolia.json

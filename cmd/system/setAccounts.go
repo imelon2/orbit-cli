@@ -96,7 +96,7 @@ func NewArbOwnerLibs(client *ethclient.Client) *ArbOwnerLibs {
 func NewArbOwnerLibsPrompt() *ArbOwnerLibs {
 	new := new(ArbOwnerLibs)
 
-	client, auth, err := ethLib.GenerateAuth()
+	client, auth, _, err := ethLib.GenerateAuth()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,5 +1,5 @@
 providers:
   local:
-    ethereum: http://localhost:8545
-    arbitrum: http://localhost:8547
-    orbit: http://localhost:3347
+    - http://localhost:8545 # Layer 1
+    - http://localhost:8547 # Layer 2
+    - http://localhost:3347 # Layer 2

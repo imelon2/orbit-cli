@@ -1,4 +1,4 @@
-package arblib
+package retryable
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/imelon2/orbit-cli/solgen/go/bridgegen"
 )
 
 type Retryable struct {
@@ -24,25 +25,55 @@ type Retryable struct {
 	Data                   string         `json:data`
 }
 
-const (
-	ErrorTrigger_GasLimit          = 1
-	ErrorTrigger_MaxFeePerGas      = 1
-	ErrorTrigger_MaxSubmissionCost = 1
-)
+type RetryableData struct {
+	From                   common.Address // address
+	To                     common.Address // address
+	L2CallValue            *big.Int       // uint256
+	Deposit                *big.Int       // uint256
+	MaxSubmissionCost      *big.Int       // uint256
+	ExcessFeeRefundAddress common.Address // address
+	CallValueRefundAddress common.Address // address
+	GasLimit               *big.Int       // uint256
+	MaxFeePerGas           *big.Int       // uint256
+	Data                   []byte         // bytes
+}
 
-// func PpopulateRetryable(client *ethclient.Client, from common.Address, to *common.Address, data []byte) {
-// 	zombieMsg := ethereum.CallMsg{
-// 		From:      from,
-// 		To:        to,
-// 		Gas:       tx.Gas(),
-// 		GasPrice:  tx.GasPrice(),
-// 		GasFeeCap: tx.GasFeeCap(),
-// 		GasTipCap: tx.GasTipCap(),
-// 		Value:     new(big.Int),
-// 		Data:      data,
-// 	}
-// 	client.CallContract(context)
-// }
+func ParseRetryable(data []byte) (RetryableData, error) {
+	parsed, err := bridgegen.InboxMetaData.GetAbi()
+	if err != nil {
+		return RetryableData{}, fmt.Errorf("failed get InboxMetaData abi : %d", err)
+	}
+	var sigdata [4]byte
+	for i, data := range data[:4] {
+		sigdata[i] = data
+	}
+	errorAbi, err := parsed.ErrorByID(sigdata)
+	if err != nil {
+		return RetryableData{}, err
+	}
+
+	if errorAbi.Name != "RetryableData" {
+		return RetryableData{}, fmt.Errorf("no retryable data found in error: : %s", data)
+	}
+
+	decodedError, err := errorAbi.Inputs.Unpack(data[4:])
+	if err != nil {
+		return RetryableData{}, fmt.Errorf("failed to unpack Retryable error data : %v", err)
+	}
+
+	return RetryableData{
+		From:                   decodedError[0].(common.Address),
+		To:                     decodedError[1].(common.Address),
+		L2CallValue:            decodedError[2].(*big.Int),
+		Deposit:                decodedError[3].(*big.Int),
+		MaxSubmissionCost:      decodedError[4].(*big.Int),
+		ExcessFeeRefundAddress: decodedError[5].(common.Address),
+		CallValueRefundAddress: decodedError[6].(common.Address),
+		GasLimit:               decodedError[7].(*big.Int),
+		MaxFeePerGas:           decodedError[8].(*big.Int),
+		Data:                   decodedError[9].([]byte),
+	}, nil
+}
 
 func ParseRetryableMessage(msg []byte) Retryable {
 

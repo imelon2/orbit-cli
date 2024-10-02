@@ -49,95 +49,95 @@ var GasCmd = &cobra.Command{
 		// if ArbOSVersion.Int64()-55 >= 20 {
 
 		// }
-		L1FeesAvailable, err := ArbGasInfo.GetL1FeesAvailable(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetL1FeesAvailable: %v", err)
-		}
+		L1FeesAvailable, _ := ArbGasInfo.GetL1FeesAvailable(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1FeesAvailable: %v", err)
+		// }
 
-		L1PricingFundsDueForRewards, err := ArbGasInfo.GetL1PricingFundsDueForRewards(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetL1PricingFundsDueForRewards: %v", err)
-		}
+		L1PricingFundsDueForRewards, _ := ArbGasInfo.GetL1PricingFundsDueForRewards(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1PricingFundsDueForRewards: %v", err)
+		// }
 
-		L1PricingSurplus, err := ArbGasInfo.GetL1PricingSurplus(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetL1PricingSurplus: %v", err)
-		}
+		L1PricingSurplus, _ := ArbGasInfo.GetL1PricingSurplus(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1PricingSurplus: %v", err)
+		// }
 
-		LastL1PricingSurplus, err := ArbGasInfo.GetLastL1PricingSurplus(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetLastL1PricingSurplus: %v", err)
-		}
+		LastL1PricingSurplus, _ := ArbGasInfo.GetLastL1PricingSurplus(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetLastL1PricingSurplus: %v", err)
+		// }
 
-		L1PricingUnitsSinceUpdate, err := ArbGasInfo.GetL1PricingUnitsSinceUpdate(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetL1PricingUnitsSinceUpdate: %v", err)
-		}
+		L1PricingUnitsSinceUpdate, _ := ArbGasInfo.GetL1PricingUnitsSinceUpdate(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1PricingUnitsSinceUpdate: %v", err)
+		// }
 
-		L1BaseFeeEstimate, err := ArbGasInfo.GetL1BaseFeeEstimate(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetL1BaseFeeEstimate: %v", err)
-		}
+		L1BaseFeeEstimate, _ := ArbGasInfo.GetL1BaseFeeEstimate(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1BaseFeeEstimate: %v", err)
+		// }
 
-		LastL1PricingUpdateTime, err := ArbGasInfo.GetLastL1PricingUpdateTime(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetLastL1PricingUpdateTime: %v", err)
-		}
+		LastL1PricingUpdateTime, _ := ArbGasInfo.GetLastL1PricingUpdateTime(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetLastL1PricingUpdateTime: %v", err)
+		// }
 
-		MinimumGasPrice, err := ArbGasInfo.GetMinimumGasPrice(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetMinimumGasPrice: %v", err)
-		}
+		MinimumGasPrice, _ := ArbGasInfo.GetMinimumGasPrice(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetMinimumGasPrice: %v", err)
+		// }
 
-		AmortizedCostCapBips, err := ArbGasInfo.GetAmortizedCostCapBips(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetAmortizedCostCapBips: %v", err)
-		}
+		AmortizedCostCapBips, _ := ArbGasInfo.GetAmortizedCostCapBips(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetAmortizedCostCapBips: %v", err)
+		// }
 
-		L1PricingEquilibrationUnits, err := ArbGasInfo.GetL1PricingEquilibrationUnits(ethLib.Callopts) // 20
-		if err != nil {
-			log.Fatalf("fail call GetL1PricingEquilibrationUnits: %v", err)
-		}
+		L1PricingEquilibrationUnits, _ := ArbGasInfo.GetL1PricingEquilibrationUnits(ethLib.Callopts) // 20
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1PricingEquilibrationUnits: %v", err)
+		// }
 
-		L1BaseFeeEstimateInertia, err := ArbGasInfo.GetL1BaseFeeEstimateInertia(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetL1BaseFeeEstimateInertia: %v", err)
-		}
+		L1BaseFeeEstimateInertia, _ := ArbGasInfo.GetL1BaseFeeEstimateInertia(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1BaseFeeEstimateInertia: %v", err)
+		// }
 
-		PerBatchGasCharge, err := ArbGasInfo.GetPerBatchGasCharge(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetPerBatchGasCharge: %v", err)
-		}
+		PerBatchGasCharge, _ := ArbGasInfo.GetPerBatchGasCharge(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetPerBatchGasCharge: %v", err)
+		// }
 
-		L1RewardRate, err := ArbGasInfo.GetL1RewardRate(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetL1RewardRate: %v", err)
-		}
+		L1RewardRate, _ := ArbGasInfo.GetL1RewardRate(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1RewardRate: %v", err)
+		// }
 
-		L1RewardRecipient, err := ArbGasInfo.GetL1RewardRecipient(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetL1RewardRecipient: %v", err)
-		}
+		L1RewardRecipient, _ := ArbGasInfo.GetL1RewardRecipient(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetL1RewardRecipient: %v", err)
+		// }
 
-		CurrentTxL1GasFees, err := ArbGasInfo.GetCurrentTxL1GasFees(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetCurrentTxL1GasFees: %v", err)
-		}
+		CurrentTxL1GasFees, _ := ArbGasInfo.GetCurrentTxL1GasFees(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetCurrentTxL1GasFees: %v", err)
+		// }
 
-		GasBacklog, err := ArbGasInfo.GetGasBacklog(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetGasBacklog: %v", err)
-		}
+		GasBacklog, _ := ArbGasInfo.GetGasBacklog(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetGasBacklog: %v", err)
+		// }
 
-		GasBacklogTolerance, err := ArbGasInfo.GetGasBacklogTolerance(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetGasBacklogTolerance: %v", err)
-		}
+		GasBacklogTolerance, _ := ArbGasInfo.GetGasBacklogTolerance(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetGasBacklogTolerance: %v", err)
+		// }
 
-		PricingInertia, err := ArbGasInfo.GetPricingInertia(ethLib.Callopts)
-		if err != nil {
-			log.Fatalf("fail call GetPricingInertia: %v", err)
-		}
+		PricingInertia, _ := ArbGasInfo.GetPricingInertia(ethLib.Callopts)
+		// if err != nil {
+		// 	log.Fatalf("fail call GetPricingInertia: %v", err)
+		// }
 
 		block, err := client.BlockByNumber(context.Background(), nil /* Latest */)
 		if err != nil {

@@ -37,6 +37,12 @@ func (c *Calldata) GetMethodById() (*Calldata, error) {
 	return c, nil
 }
 
+func (c *Calldata) GetMethod(name string) *Calldata {
+	_method := c.Abi.Methods[name]
+	c.Method = &_method
+	return c
+}
+
 func (c *Calldata) GetUnpackedHexdata() ([]interface{}, error) {
 	if c.Method == nil {
 		c.GetMethodById()

@@ -8,9 +8,6 @@
 [submodule "token-bridge-contracts"]
 	path = token-bridge-contracts
 	url = https://github.com/OffchainLabs/token-bridge-contracts.git
-[submodule "promptui"]
-	path = promptui
-	url = https://github.com/shaneharter/promptui.git
 [submodule "canonical-weth"]
 	path = canonical-weth
 	url = https://github.com/gnosis/canonical-weth.git

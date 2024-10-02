@@ -1,33 +1,36 @@
 package arblib
 
 import (
-	"fmt"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/ethclient"
+	bridgelib "github.com/imelon2/orbit-cli/arbLib/bridgeLib"
+	rolluplib "github.com/imelon2/orbit-cli/arbLib/rollupLib"
 	"github.com/imelon2/orbit-cli/contractgen"
-	ethlib "github.com/imelon2/orbit-cli/ethLib"
-	"github.com/imelon2/orbit-cli/solgen/go/bridgegen"
 )
 
 type ArbContract struct {
-	Contracts contractgen.NetworkInfo
+	Contracts *contractgen.NetworkInfo
 	client    *ethclient.Client
 }
 
-func NewContractLib() {
-
-}
-
-func (arb ArbContract) newInbox() (*bridgegen.Inbox, error) {
-	return bridgegen.NewInbox(arb.Contracts.EthBridge.Inbox, arb.client)
-}
-
-func (arb ArbContract) EstimateSubmissionFee(dataLength *big.Int, baseFee *big.Int) (*big.Int, error) {
-	inbox, err := arb.newInbox()
-	if err != nil {
-		return nil, fmt.Errorf("failed bind inbox contract: %d", err)
+func NewContractLib(contracts *contractgen.NetworkInfo, client *ethclient.Client) ArbContract {
+	return ArbContract{
+		Contracts: contracts,
+		client:    client,
 	}
+}
 
-	return inbox.CalculateRetryableSubmissionFee(ethlib.Callopts, dataLength, baseFee)
+func (arb ArbContract) NewInbox() (rolluplib.Inbox, error) {
+	return rolluplib.NewInbox(arb.client, arb.Contracts.EthBridge.Inbox)
+}
+
+func (arb ArbContract) NewBridge() (rolluplib.Bridge, error) {
+	return rolluplib.NewBridge(arb.client, arb.Contracts.EthBridge.Bridge)
+}
+
+func (arb ArbContract) NewERC20Bridge() (rolluplib.ERC20Bridge, error) {
+	return rolluplib.NewERC20Bridge(arb.client, arb.Contracts.EthBridge.Bridge)
+}
+
+func (arb ArbContract) NewL1GatewayRouter() (bridgelib.Router, error) {
+	return bridgelib.NewL1GatewayRouter(arb.client, arb.Contracts.TokenBridge.L1GatewayRouter)
 }

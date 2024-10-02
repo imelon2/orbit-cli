@@ -7,8 +7,8 @@ import (
 	"encoding/hex"
 	"log"
 
-	arblib "github.com/imelon2/orbit-cli/arbLib"
 	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/retryable"
 	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +16,7 @@ import (
 // retryableCmd represents the retryable command
 var RetryableCmd = &cobra.Command{
 	Use:   "retryable",
-	Short: "Decode Retryable Data form event InboxMessageDelivered",
+	Short: "Parse Retryable hex data form event InboxMessageDelivered",
 	Run: func(cmd *cobra.Command, args []string) {
 		bytes, err := prompt.EnterTransactionHashOrBytes("Bytes Data")
 		if err != nil {
@@ -31,7 +31,7 @@ var RetryableCmd = &cobra.Command{
 
 		data := retryableBytes
 
-		retry := arblib.ParseRetryableMessage(data)
+		retry := retryable.ParseRetryableMessage(data)
 		utils.PrintPrettyJson(retry)
 	},
 }

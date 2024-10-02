@@ -15,7 +15,7 @@ import (
 // parseCmd represents the parse command
 var ParseCmd = &cobra.Command{
 	Use:   "parse",
-	Short: "Parse Calldata, Event, Retrya",
+	Short: "Parse Calldata, Event, Retryable InboxMessageDelivered",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, filename, _, ok := runtime.Caller(0)
 		if !ok {
@@ -40,7 +40,6 @@ var ParseCmd = &cobra.Command{
 
 func init() {
 	ParseCmd.AddCommand(CalldataCmd)
-	ParseCmd.AddCommand(EventCmd)
 	ParseCmd.AddCommand(EventCmd)
 	ParseCmd.AddCommand(AliasCmd)
 	ParseCmd.AddCommand(RetryableCmd)

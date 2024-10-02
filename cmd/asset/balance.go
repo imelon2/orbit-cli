@@ -15,7 +15,7 @@ import (
 
 var BalanceCmd = &cobra.Command{
 	Use:   "balance",
-	Short: "A brief description of your command",
+	Short: "Get balance native, erc20 asset",
 	Run: func(cmd *cobra.Command, args []string) {
 		getAccountBalance()
 	},

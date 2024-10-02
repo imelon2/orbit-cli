@@ -30,7 +30,7 @@ type EventLog struct {
 // eventCmd represents the event command
 var EventCmd = &cobra.Command{
 	Use:   "event",
-	Short: "Parse calldata by transaction hash",
+	Short: "Parse event log by transaction hash",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		abiPath := utils.GetAbiDir()

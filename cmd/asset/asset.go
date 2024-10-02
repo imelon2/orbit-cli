@@ -15,7 +15,7 @@ import (
 // assetCmd represents the asset command
 var AssetCmd = &cobra.Command{
 	Use:   "asset",
-	Short: "A brief description of your command",
+	Short: "Get & Transafer native, erc20 asset",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, filename, _, ok := runtime.Caller(0)
 		if !ok {

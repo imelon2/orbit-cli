@@ -24,7 +24,7 @@ func IsTransaction(addr string) bool {
 }
 
 func IsBytes(addr string) bool {
-	re := regexp.MustCompile("^0x[0-9a-fA-F]$")
+	re := regexp.MustCompile("^0x[0-9a-fA-F]")
 	return re.MatchString(addr)
 }
 

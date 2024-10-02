@@ -67,7 +67,7 @@ func EnterTransactionHashOrBytes(name string) (string, error) {
 			Validate: func(val interface{}) error {
 				// if the input matches the expectation
 				if str := val.(string); !utils.IsBytes(str) {
-					return errors.New("Invalid transaction hash")
+					return errors.New("Invalid hash")
 				}
 				// nothing was wrong
 				return nil

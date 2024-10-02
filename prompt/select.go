@@ -162,6 +162,27 @@ func SelectCommand(dirPath string) (string, error) {
 	return selected, nil
 }
 
+func SelectProviders() ([]string, error) {
+	var _chains []string
+	chains := viper.GetStringMap("providers")
+
+	for key, _ := range chains {
+		_chains = append(_chains, key)
+	}
+	sort.Strings(_chains)
+	var selectQs = &survey.Select{
+		Message: "Select Chain: ",
+		Options: _chains,
+	}
+
+	var selectedChain string
+	err := survey.AskOne(selectQs, &selectedChain)
+	if err != nil {
+		return nil, fmt.Errorf("%v : %v \n", PROMPT_SELECT_PROVIDER_ERROR, err)
+	}
+	return viper.GetStringSlice("providers." + selectedChain), nil
+}
+
 func SelectProvider() (string, error) {
 	var selectedChain string
 	var selectedProvider string

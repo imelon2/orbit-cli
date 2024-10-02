@@ -15,7 +15,7 @@ import (
 // systemCmd represents the system command
 var SystemCmd = &cobra.Command{
 	Use:   "system",
-	Short: "A brief description of your command",
+	Short: "Manage system network Gas, access account, vault",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, filename, _, ok := runtime.Caller(0)
 		if !ok {

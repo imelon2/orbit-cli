@@ -21,8 +21,9 @@ var Callopts = &bind.CallOpts{
 }
 
 type TransactionHash struct {
-	client *ethclient.Client
-	hash   common.Hash
+	client      *ethclient.Client
+	transaction *types.Transaction
+	hash        common.Hash
 }
 
 func NewTransactionHash(client *ethclient.Client, hash common.Hash) *TransactionHash {
@@ -30,6 +31,17 @@ func NewTransactionHash(client *ethclient.Client, hash common.Hash) *Transaction
 	newTransactionHash.hash = hash
 	newTransactionHash.client = client
 	return newTransactionHash
+}
+
+func NewTransaction(client *ethclient.Client, tx *types.Transaction) *TransactionHash {
+	newTx := new(TransactionHash)
+	newTx.transaction = tx
+	newTx.client = client
+	return newTx
+}
+
+func (txHash TransactionHash) Wait() (*types.Receipt, error) {
+	return bind.WaitMined(context.Background(), txHash.client, txHash.transaction)
 }
 
 func (txHash TransactionHash) GetTransactionByHash() (*types.Transaction, bool, error) {

@@ -11,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	ethlib "github.com/imelon2/orbit-cli/ethLib"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
@@ -58,17 +59,25 @@ var ErrorCmd = &cobra.Command{
 			}
 
 			callMsg := ethereum.CallMsg{
-				From:      *sender,
-				To:        tx.To(),
-				Gas:       tx.Gas(),
-				GasPrice:  tx.GasPrice(),
-				Data:      tx.Data(),
-				GasFeeCap: tx.GasFeeCap(),
-				GasTipCap: tx.GasTipCap(),
-				Value:     tx.Value(),
+				From:     *sender,
+				To:       tx.To(),
+				Gas:      tx.Gas(),
+				GasPrice: tx.GasPrice(),
+				Data:     tx.Data(),
+				// GasFeeCap: tx.GasFeeCap(),
+				// GasTipCap: tx.GasTipCap(),
+				Value: tx.Value(),
 			}
 
-			bytes, err := client.CallContract(context.Background(), callMsg, receipt.BlockNumber)
+			bytes, errData := client.CallContract(context.Background(), callMsg, receipt.BlockNumber)
+			rpcErr, ok := errData.(rpc.DataError)
+			if ok {
+				errorData := rpcErr.ErrorData()
+				errorMsg := rpcErr.Error()
+				// errorCode := rpcErr.ErrorCode()
+				fmt.Printf("errorMsg : %s\n", errorMsg)
+				fmt.Printf("errorData : %s\n", errorData)
+			}
 			if err != nil {
 				log.Fatal(err)
 			}

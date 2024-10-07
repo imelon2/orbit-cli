@@ -54,6 +54,26 @@ func (txHash TransactionHash) GetTransactionByHash() (*types.Transaction, bool, 
 	return tx, isPending, nil
 }
 
+func (txHash TransactionHash) GetTransactionSender() (*types.Transaction, *types.Receipt, *common.Address, error) {
+	tx, _, err := txHash.GetTransactionByHash()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	receipt, err := txHash.GetTransactionReceipt()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	sender, err := txHash.client.TransactionSender(context.Background(), tx, receipt.BlockHash, receipt.TransactionIndex)
+	if err == ethereum.NotFound {
+		return nil, nil, nil, fmt.Errorf("transaction hash %v not found: %d", txHash.hash.Hex(), err)
+	} else if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to get TransactionByHash: %d", err)
+	}
+	return tx, receipt, &sender, nil
+}
+
 func (txHash TransactionHash) GetTransactionReceipt() (*types.Receipt, error) {
 	tx, err := txHash.client.TransactionReceipt(context.Background(), txHash.hash)
 	if err == ethereum.NotFound {

@@ -43,4 +43,5 @@ func init() {
 	ParseCmd.AddCommand(EventCmd)
 	ParseCmd.AddCommand(AliasCmd)
 	ParseCmd.AddCommand(RetryableCmd)
+	ParseCmd.AddCommand(ErrorCmd)
 }

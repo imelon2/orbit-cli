@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -55,12 +56,12 @@ var SendCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		gasLimit := uint64(23000)
+		gasLimit := uint64(23000 * 5)
 		gasPrice, err := client.SuggestGasPrice(context.Background())
 		if err != nil {
 			log.Fatal(err)
 		}
-
+		gasPrice.Mul(gasPrice, big.NewInt(2))
 		tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, nil /* calldata */)
 		chainID, err := client.NetworkID(context.Background())
 		if err != nil {

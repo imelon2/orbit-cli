@@ -3,6 +3,7 @@ build: .make .make/yarndeps .make/solidity .make/solgen
 
 clean :
 	rm -rf $(GOPATH)/bin/orbit-toolkit 
+	rm -rf .make
 
 .make/yarndeps: nitro-contracts/package.json nitro-contracts/yarn.lock .make
 	yarn --cwd nitro-contracts install

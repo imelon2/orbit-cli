@@ -23,6 +23,10 @@ func (arb ArbContract) NewInbox() (rolluplib.Inbox, error) {
 	return rolluplib.NewInbox(arb.client, arb.Contracts.EthBridge.Inbox)
 }
 
+func (arb ArbContract) NewSequencerInbox() (rolluplib.SequencerInbox, error) {
+	return rolluplib.NewSequencerInbox(arb.client, arb.Contracts.EthBridge.SequencerInbox)
+}
+
 func (arb ArbContract) NewBridge() (rolluplib.Bridge, error) {
 	return rolluplib.NewBridge(arb.client, arb.Contracts.EthBridge.Bridge)
 }

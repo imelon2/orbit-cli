@@ -2,6 +2,7 @@ package rolluplib
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -70,4 +71,8 @@ func NewERC20Bridge(client *ethclient.Client, addr common.Address) (ERC20Bridge,
 
 func (b ERC20Bridge) GetFeeToken() (common.Address, error) {
 	return b.ERC20Bridge.ERC20BridgeCaller.NativeToken(ethlib.Callopts)
+}
+
+func (b ERC20Bridge) SequencerMessageCount() (*big.Int, error) {
+	return b.ERC20Bridge.ERC20BridgeCaller.SequencerMessageCount(ethlib.Callopts)
 }

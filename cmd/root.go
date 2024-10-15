@@ -13,6 +13,7 @@ import (
 	asset "github.com/imelon2/orbit-cli/cmd/asset"
 	bridge "github.com/imelon2/orbit-cli/cmd/bridge"
 	parse "github.com/imelon2/orbit-cli/cmd/parse"
+	search "github.com/imelon2/orbit-cli/cmd/search"
 	system "github.com/imelon2/orbit-cli/cmd/system"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/imelon2/orbit-cli/utils"
@@ -61,6 +62,7 @@ func init() {
 	rootCmd.AddCommand(system.SystemCmd)
 	rootCmd.AddCommand(asset.AssetCmd)
 	rootCmd.AddCommand(bridge.BridgeCmd)
+	rootCmd.AddCommand(search.SearchCmd)
 
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 

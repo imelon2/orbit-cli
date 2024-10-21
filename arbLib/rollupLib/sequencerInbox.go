@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -12,11 +13,12 @@ import (
 )
 
 type SequencerBatchDeliveredEvent struct {
-	BatchSequenceNumber *big.Int
-	TransactionHash     *common.Hash
-	BeforeAcc           [32]byte
-	AfterAcc            [32]byte
-	DelayedAcc          [32]byte
+	BatchSequenceNumber      *big.Int
+	TransactionHash          *common.Hash
+	BeforeAcc                [32]byte
+	AfterAcc                 [32]byte
+	DelayedAcc               [32]byte
+	AfterDelayedMessagesRead *big.Int
 }
 
 type SequencerInbox struct {
@@ -81,23 +83,31 @@ func (si SequencerInbox) GetBatchData(count *big.Int) ([]SequencerBatchDelivered
 			return nil, fmt.Errorf("fail FilterSequencerBatchDelivered : %s", err)
 		}
 
+		_batchTransactions := make([]SequencerBatchDeliveredEvent, 0)
 		for iterator.Next() {
 			event := iterator.Event
 			e := SequencerBatchDeliveredEvent{
-				BatchSequenceNumber: event.BatchSequenceNumber,
-				TransactionHash:     &event.Raw.TxHash,
-				BeforeAcc:           event.BeforeAcc,
-				AfterAcc:            event.AfterAcc,
-				DelayedAcc:          event.DelayedAcc,
+				BatchSequenceNumber:      event.BatchSequenceNumber,
+				TransactionHash:          &event.Raw.TxHash,
+				BeforeAcc:                event.BeforeAcc,
+				AfterAcc:                 event.AfterAcc,
+				DelayedAcc:               event.DelayedAcc,
+				AfterDelayedMessagesRead: event.AfterDelayedMessagesRead,
 			}
 
-			batchTransactions = append(batchTransactions, e)
+			_batchTransactions = append(_batchTransactions, e)
+		}
 
+		sort.Slice(_batchTransactions, func(i, j int) bool {
+			return _batchTransactions[i].BatchSequenceNumber.Cmp(_batchTransactions[j].BatchSequenceNumber) > 0
+		})
+
+		for _, data := range _batchTransactions {
+			batchTransactions = append(batchTransactions, data)
 			if len(batchTransactions) == int(count.Int64()) {
 				break
 			}
 		}
-
 		to = to - MAX_EVENT_BLOCK
 	}
 

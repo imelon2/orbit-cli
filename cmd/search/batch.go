@@ -6,11 +6,13 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	arblib "github.com/imelon2/orbit-cli/arbLib"
 	"github.com/imelon2/orbit-cli/contractgen"
 	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -49,20 +51,27 @@ var BatchCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		count, err := erc20Bridge.SequencerMessageCount()
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		fmt.Printf("Max Batch Count %d\n", count)
 
-		events, err := sequencerInbox.GetBatchData(count)
+		countF, _ := cmd.Flags().GetInt("count")
+		if countF == 0 {
+			countF = int(count.Int64())
+		}
+
+		events, err := sequencerInbox.GetBatchData(big.NewInt(int64(countF)))
 		if err != nil {
 			log.Fatal(err)
 		}
-		// sequencerInbox.GetBatchData(big.NewInt(7))
+
+		utils.PrintPrettyJson(utils.ConvertBytesToHex(events))
 	},
 }
 
 func init() {
+	BatchCmd.Flags().IntP("count", "c", 10, "Number of batch data to retrieve")
 }

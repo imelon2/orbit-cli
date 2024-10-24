@@ -40,4 +40,6 @@ var SearchCmd = &cobra.Command{
 
 func init() {
 	SearchCmd.AddCommand(BatchCmd)
+	SearchCmd.AddCommand(NodeConfirmedCmd)
+	SearchCmd.AddCommand(NodeCreatedCmd)
 }

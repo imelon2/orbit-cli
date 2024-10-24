@@ -16,9 +16,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// barchCmd represents the barch command
-var BatchCmd = &cobra.Command{
-	Use:   "batch",
+// NodeCreatedCmd represents the NodeCreated command
+var NodeCreatedCmd = &cobra.Command{
+	Use:   "nodeCreated",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		providers, err := prompt.SelectProviders()
@@ -43,27 +43,23 @@ var BatchCmd = &cobra.Command{
 		}
 
 		arb := arblib.NewContractLib(&network, parentClient)
-		sequencerInbox, err := arb.NewSequencerInbox()
-		if err != nil {
-			log.Fatal(err)
-		}
-		erc20Bridge, err := arb.NewERC20Bridge()
+		rollup, err := arb.NewRollup()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		count, err := erc20Bridge.SequencerMessageCount()
+		count, err := rollup.LatestNodeCreated()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Max Batch Count %d\n", count)
 
+		fmt.Printf("Max Node Created Count %d\n", count)
 		countF, _ := cmd.Flags().GetInt("count")
-		if countF == 0 || countF > int(count.Int64()) {
-			countF = int(count.Int64())
+		if countF == 0 || countF > int(count) {
+			countF = int(count)
 		}
 
-		events, err := sequencerInbox.GetBatchData(big.NewInt(int64(countF)))
+		events, err := rollup.GetNodeCreated(big.NewInt(int64(countF)))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -73,5 +69,5 @@ var BatchCmd = &cobra.Command{
 }
 
 func init() {
-	BatchCmd.Flags().IntP("count", "c", 10, "Number of batch data to retrieve")
+	NodeCreatedCmd.Flags().IntP("count", "c", 10, "Number of batch data to retrieve")
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/imelon2/orbit-cli/solgen/go/bridgegen"
+	"github.com/imelon2/orbit-cli/utils"
 )
 
 type SequencerBatchDeliveredEvent struct {
@@ -53,8 +54,6 @@ func NewSequencerInbox(client *ethclient.Client, addr common.Address) (Sequencer
 
 func (si SequencerInbox) GetBatchData(count *big.Int) ([]SequencerBatchDeliveredEvent, error) {
 
-	MAX_EVENT_BLOCK := uint64(5000)
-
 	batchTransactions := make([]SequencerBatchDeliveredEvent, 0)
 
 	num, err := si.Client.BlockNumber(context.Background())
@@ -65,8 +64,8 @@ func (si SequencerInbox) GetBatchData(count *big.Int) ([]SequencerBatchDelivered
 	from, to := uint64(0), num
 
 	for len(batchTransactions) < int(count.Int64()) {
-		if to >= MAX_EVENT_BLOCK {
-			from = to - MAX_EVENT_BLOCK
+		if to >= utils.MAX_EVENT_BLOCK {
+			from = to - utils.MAX_EVENT_BLOCK
 		} else {
 			from = 0
 		}
@@ -108,7 +107,7 @@ func (si SequencerInbox) GetBatchData(count *big.Int) ([]SequencerBatchDelivered
 				break
 			}
 		}
-		to = to - MAX_EVENT_BLOCK
+		to = to - utils.MAX_EVENT_BLOCK
 	}
 
 	return batchTransactions, nil

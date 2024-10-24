@@ -69,5 +69,5 @@ var NodeCreatedCmd = &cobra.Command{
 }
 
 func init() {
-	NodeCreatedCmd.Flags().IntP("count", "c", 10, "Number of batch data to retrieve")
+	NodeCreatedCmd.Flags().IntP("count", "c", 10, "Number of node created data to retrieve")
 }

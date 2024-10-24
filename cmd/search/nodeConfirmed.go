@@ -70,5 +70,5 @@ var NodeConfirmedCmd = &cobra.Command{
 
 func init() {
 
-	NodeConfirmedCmd.Flags().IntP("count", "c", 10, "Number of node created data to retrieve")
+	NodeConfirmedCmd.Flags().IntP("count", "c", 10, "Number of node confirmed data to retrieve")
 }

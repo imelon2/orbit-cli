@@ -1,4 +1,4 @@
-build: .make .make/yarndeps .make/solidity .make/solgen
+build: .make .make/yarndeps .make/solidity .make/solgen .make/keystore
 	go install
 
 clean :
@@ -20,6 +20,9 @@ clean :
 	mkdir -p solgen/abi
 	go run solgen/gen.go
 	@touch $@
+
+.make/keystore: .make
+	mkdir -p keystore
 
 .make:
 	mkdir .make

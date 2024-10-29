@@ -17,9 +17,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NodeCreatedCmd represents the NodeCreated command
-var NodeCreatedCmd = &cobra.Command{
-	Use:   "NodeCreated",
+// BatchDeliveredCmd represents the BatchDelivered command
+var BatchDeliveredCmd = &cobra.Command{
+	Use:   "BatchDelivered",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
@@ -46,7 +46,11 @@ var NodeCreatedCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		RollupCore, err := network.NewRollupCore(parentClient)
+		SequencerInbox, err := network.NewSequencerInbox(parentClient)
+		if err != nil {
+			log.Fatal(err)
+		}
+		Bridge, err := network.NewBridge(parentClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -55,34 +59,33 @@ var NodeCreatedCmd = &cobra.Command{
 			Pending: false,
 			Context: nil,
 		}
-		max, err := RollupCore.RollupCoreCaller.LatestNodeCreated(Callopts)
+
+		max, err := Bridge.BridgeCaller.SequencerMessageCount(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		count, err := prompt.EnterInt(int(max), "NodeCreated events")
+
+		count, err := prompt.EnterInt(int(max.Int64()), "NodeConfirmed events")
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		eventFunc := func(opt bind.FilterOpts) ([]interface{}, error) {
-			iterator, err := RollupCore.RollupCoreFilterer.FilterNodeCreated(&opt, nil, nil, nil)
+			iterator, err := SequencerInbox.SequencerInboxFilterer.FilterSequencerBatchDelivered(&opt, nil, nil, nil)
 			if err != nil {
-				return nil, fmt.Errorf("fail FilterNodeCreated : %s", err)
+				return nil, fmt.Errorf("fail FilterSequencerBatchDelivered : %s", err)
 			}
 
 			_events := make([]interface{}, 0)
 			for iterator.Next() {
 				event := iterator.Event
-				e := arbnetwork.NodeCreatedEvent{
-					NodeNum:        event.NodeNum,
-					ParentNodeHash: event.ParentNodeHash,
-					NodeHash:       event.NodeHash,
-					ExecutionHash:  event.ExecutionHash,
-					// Assertion:          event.Assertion,
-					AfterInboxBatchAcc: event.AfterInboxBatchAcc,
-					WasmModuleRoot:     event.WasmModuleRoot,
-					InboxMaxCount:      event.InboxMaxCount,
-					TransactionHash:    &event.Raw.TxHash,
+				e := arbnetwork.SequencerBatchDeliveredEvent{
+					BatchSequenceNumber:      event.BatchSequenceNumber,
+					TransactionHash:          &event.Raw.TxHash,
+					BeforeAcc:                event.BeforeAcc,
+					AfterAcc:                 event.AfterAcc,
+					DelayedAcc:               event.DelayedAcc,
+					AfterDelayedMessagesRead: event.AfterDelayedMessagesRead,
 				}
 
 				_events = append(_events, e)

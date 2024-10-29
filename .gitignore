@@ -7,8 +7,8 @@ solgen/abi/aggregateAbi.json
 .make/
 config.yml
 
-keystore/accounts/*
+keystore/*
 
-contractgen/network/*
-!contractgen/network/arbitrum-one.json
-!contractgen/network/arbitrum-sepolia.json
+arbNetwork/networks/*
+!arbNetwork/networks/arbitrum-one.json
+!arbNetwork/networks/arbitrum-sepolia.json

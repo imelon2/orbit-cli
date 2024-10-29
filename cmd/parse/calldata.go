@@ -6,92 +6,97 @@ package cmd
 import (
 	"encoding/hex"
 	"log"
-	"os"
-	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	ethlib "github.com/imelon2/orbit-cli/ethLib"
+	"github.com/imelon2/orbit-cli/common/logs"
+	"github.com/imelon2/orbit-cli/common/tx"
+	"github.com/imelon2/orbit-cli/common/utils"
+	"github.com/imelon2/orbit-cli/parse"
 	"github.com/imelon2/orbit-cli/prompt"
-	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
-
-type CalldataLog struct {
-	Function string      `json:"function"`
-	Params   interface{} `json:"params"`
-}
 
 // calldataCmd represents the calldata command
 var CalldataCmd = &cobra.Command{
 	Use:   "calldata",
-	Short: "Parse calldata by transaction hash or bytes",
+	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
+		var calldataBytes []byte
 
-		abiPath := utils.GetAbiDir()
-		_abi, err := os.ReadFile(abiPath)
+		chains, err := prompt.SelectChains(prompt.LAST_PROVIDER_STRING, prompt.LAST_CALLDATA_STRING)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		abi, err := ethlib.GetAbi(strings.NewReader(string(_abi)))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		providerOrCalldata, isProvider, err := prompt.SelectProviderOrBytes()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var data []byte
-		if isProvider {
-			client, err := ethclient.Dial(providerOrCalldata)
+		// Enter Provider
+		if chains == prompt.LAST_PROVIDER_STRING {
+			url, err := prompt.EnterProviderUrl()
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			hash, err := prompt.EnterTransactionHash()
+			client, err := ethclient.Dial(url)
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			txHash := ethlib.NewTransactionHash(client, hash)
-			tx, _, err := txHash.GetTransactionByHash()
+			sHash, err := prompt.EnterTransactionHash()
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			data = tx.Data()
-		} else {
-			providerOrCalldata = providerOrCalldata[2:]
-			calldataBytes, err := hex.DecodeString(providerOrCalldata)
+			hash := common.HexToHash(sHash)
+			txLib := tx.NewTxLib(client, &hash)
+			transaction, _, err := txLib.GetTransactionByHash()
+			if err != nil {
+				log.Fatal(err)
+			}
+			calldataBytes = transaction.Data()
+			// Enter Bytes Calldata
+		} else if chains == prompt.LAST_CALLDATA_STRING {
+			calldata, err := prompt.EnterBytes()
+			if err != nil {
+				log.Fatal(err)
+			}
+			calldata = utils.Unhexlify(calldata)
+			calldataBytes, err = hex.DecodeString(calldata)
 			if err != nil {
 				log.Fatalf("fail string calldata decode to hex: %v", err)
 			}
-			data = calldataBytes
+		} else {
+			// Select Chain and Provider
+			provider, err := prompt.SelectProviders(chains)
+			if err != nil {
+				log.Fatal(err)
+			}
+			client, err := ethclient.Dial(provider)
+			if err != nil {
+				log.Fatal(err)
+			}
+			sHash, err := prompt.EnterTransactionHash()
+			if err != nil {
+				log.Fatal(err)
+			}
+			hash := common.HexToHash(sHash)
+			txLib := tx.NewTxLib(client, &hash)
+			transaction, _, err := txLib.GetTransactionByHash()
+			if err != nil {
+				log.Fatal(err)
+			}
+			calldataBytes = transaction.Data()
 		}
 
-		calldata, err := ethlib.NewCalldata(&abi, data).GetMethodById()
+		parse, err := parse.NewParse()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		inter, err := calldata.GetUnpackedHexdata()
+		resultJson, err := parse.ParseCalldata(calldataBytes)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		var resultJson CalldataLog
-		resultJson.Function = calldata.Method.RawName
-		jsonCalldata := make(map[string]interface{})
-		for i, data := range inter {
-			jsonCalldata[calldata.Method.Inputs[i].Name] = utils.ConvertBytesToHex(data)
-		}
-
-		resultJson.Params = jsonCalldata
-		utils.PrintPrettyJson(resultJson)
+		logs.PrintFromatter(resultJson)
 	},
 }
 
 func init() {
+
 }

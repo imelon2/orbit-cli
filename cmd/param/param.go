@@ -7,13 +7,15 @@ import (
 	"log"
 	"runtime"
 
+	get "github.com/imelon2/orbit-cli/cmd/param/get"
+	set "github.com/imelon2/orbit-cli/cmd/param/set"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
 )
 
-// parseCmd represents the parse command
-var ParseCmd = &cobra.Command{
-	Use:   "parse",
+// paramCmd represents the param command
+var ParamCmd = &cobra.Command{
+	Use:   "param",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -41,7 +43,6 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	ParseCmd.AddCommand(CalldataCmd)
-	ParseCmd.AddCommand(EventCmd)
-	ParseCmd.AddCommand(ErrorCmd)
+	ParamCmd.AddCommand(get.GetCmd)
+	ParamCmd.AddCommand(set.SetCmd)
 }

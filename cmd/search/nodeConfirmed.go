@@ -6,69 +6,97 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	arblib "github.com/imelon2/orbit-cli/arbLib"
-	"github.com/imelon2/orbit-cli/contractgen"
+	arbnetwork "github.com/imelon2/orbit-cli/arbNetwork"
+	"github.com/imelon2/orbit-cli/common/logs"
+	"github.com/imelon2/orbit-cli/common/tx"
+	"github.com/imelon2/orbit-cli/common/utils"
 	"github.com/imelon2/orbit-cli/prompt"
-	"github.com/imelon2/orbit-cli/utils"
 	"github.com/spf13/cobra"
 )
 
-// nodeCreatedCmd represents the nodeCreated command
+// NodeConfirmedCmd represents the NodeConfirmed command
 var NodeConfirmedCmd = &cobra.Command{
-	Use:   "nodeConfirmed",
+	Use:   "NodeConfirmed",
 	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		providers, err := prompt.SelectProviders()
+		chains, err := prompt.SelectChains()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		l2ProviderUrl := providers[1]
-		l3ProviderUrl := providers[2]
-
-		parentClient, err := ethclient.Dial(l2ProviderUrl)
-		if err != nil {
-			log.Fatal(err)
-		}
-		childClient, err := ethclient.Dial(l3ProviderUrl)
-		if err != nil {
-			log.Fatal(err)
-		}
-		network, err := contractgen.GetNetworkInfo(childClient)
+		parent, child, err := prompt.SelectCrossChainProviders(chains)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		arb := arblib.NewContractLib(&network, parentClient)
-		rollup, err := arb.NewRollup()
+		parentClient, err := ethclient.Dial(parent)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		count, err := rollup.LatestConfirmed()
+		childClient, err := ethclient.Dial(child)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("Max Node Confirmed Count %d\n", count)
-		countF, _ := cmd.Flags().GetInt("count")
-		if countF == 0 || countF > int(count) {
-			countF = int(count)
+		network, err := arbnetwork.GetNetworkInfo(childClient)
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		events, err := rollup.GetNodeConfirmed(big.NewInt(int64(countF)))
+		RollupCore, err := network.NewRollupCore(parentClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		utils.PrintPrettyJson(utils.ConvertBytesToHex(events))
+		Callopts := &bind.CallOpts{
+			Pending: false,
+			Context: nil,
+		}
+		max, err := RollupCore.RollupCoreCaller.LatestConfirmed(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		count, err := prompt.EnterInt(int(max), "NodeConfirmed events")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		eventFunc := func(opt bind.FilterOpts) ([]interface{}, error) {
+			iterator, err := RollupCore.RollupCoreFilterer.FilterNodeConfirmed(&opt, nil)
+			if err != nil {
+				return nil, fmt.Errorf("fail FilterNodeConfirmed : %s", err)
+			}
+
+			_events := make([]interface{}, 0)
+			for iterator.Next() {
+				event := iterator.Event
+				e := arbnetwork.NodeConfirmedEvent{
+					NodeNum:         event.NodeNum,
+					BlockHash:       event.BlockHash,
+					SendRoot:        event.SendRoot,
+					TransactionHash: &event.Raw.TxHash,
+				}
+
+				_events = append(_events, e)
+			}
+			_events = utils.Reverse(_events)
+			return _events, nil
+		}
+		result, err := tx.SearchEvent(*count, parentClient, eventFunc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print("\n\n")
+		logs.PrintFromatter(utils.ConvertBytesToHex(result))
 	},
-}
-
-func init() {
-
-	NodeConfirmedCmd.Flags().IntP("count", "c", 10, "Number of node confirmed data to retrieve")
 }

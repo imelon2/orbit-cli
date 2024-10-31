@@ -11,3 +11,6 @@
 [submodule "canonical-weth"]
 	path = canonical-weth
 	url = https://github.com/gnosis/canonical-weth.git
+[submodule "upgrade-executor"]
+	path = upgrade-executor
+	url = https://github.com/OffchainLabs/upgrade-executor.git

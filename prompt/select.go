@@ -1,11 +1,16 @@
 package prompt
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/imelon2/orbit-cli/common/path"
 	"github.com/imelon2/orbit-cli/config"
 )
 
@@ -134,4 +139,83 @@ func SelectCrossChainProviders(chain string) (string, string, error) {
 	}
 
 	return providers[selected], providers[selected+1], nil
+}
+
+type KeystoreTag struct {
+	Tag      string
+	Keystore *keystore.KeyStore
+}
+
+func SelectWalletForSign() (*accounts.Wallet, *keystore.KeyStore, *accounts.Account, error) {
+	keystorePath := path.GetKeystoreDir("")
+	files, err := os.ReadDir(keystorePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(files) == 0 {
+		return nil, nil, nil, fmt.Errorf("No keystore was created.")
+	}
+
+	var KeystoreList []KeystoreTag
+	for _, file := range files {
+		pathTag := path.GetKeystoreDir(file.Name())
+		ks := keystore.NewKeyStore(pathTag, keystore.StandardScryptN, keystore.StandardScryptP)
+		KeystoreList = append(KeystoreList, KeystoreTag{
+			Tag:      file.Name(),
+			Keystore: ks,
+		})
+	}
+
+	var addressList []string
+	for _, wallet := range KeystoreList {
+		accounts := wallet.Keystore.Accounts()
+		addressList = append(addressList, accounts[0].Address.Hex())
+	}
+
+	var qs = &survey.Select{
+		Message: "Select Wallet: ",
+		Options: addressList,
+		Description: func(value string, index int) string {
+			return KeystoreList[index].Tag
+		},
+	}
+
+	answerIndex := 0
+	err = survey.AskOne(qs, &answerIndex)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail select wallet : %v", err)
+	}
+
+	var pw string = ""
+	var wallet accounts.Wallet
+
+	ks := KeystoreList[answerIndex].Keystore
+	account := ks.Accounts()
+	err = ks.Unlock(account[answerIndex], pw)
+
+	if err == keystore.ErrDecrypt {
+		var validationQs = []*survey.Question{
+			{
+				Name:   "Password",
+				Prompt: &survey.Password{Message: "Enter the password [for skip <ENTER>]: "},
+				Validate: func(val interface{}) error {
+					err = ks.Unlock(account[answerIndex], val.(string))
+
+					if err == keystore.ErrDecrypt {
+						return errors.New("Invaild Password :" + err.Error() + "\n")
+					}
+					// nothing was wrong
+					return nil
+				},
+			},
+		}
+		err = survey.Ask(validationQs, &pw)
+	} else if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed select wallet for sign: %v", err)
+	}
+
+	wallet = ks.Wallets()[answerIndex]
+
+	return &wallet, ks, &account[answerIndex], nil
 }

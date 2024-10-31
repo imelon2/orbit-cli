@@ -4,8 +4,10 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"runtime"
 
+	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
 )
 
@@ -13,16 +15,27 @@ import (
 var SetCmd = &cobra.Command{
 	Use:   "set",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("set called")
+		_, filename, _, ok := runtime.Caller(0)
+		if !ok {
+			log.Fatal("bad path")
+		}
+
+		cmdName, err := prompt.SelectNextCmd(filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		nextCmd, _, err := cmd.Find([]string{cmdName})
+		if err != nil {
+			log.Fatal(err)
+		}
+		nextCmd.Run(nextCmd, args)
 	},
 }
 
 func init() {
+	SetCmd.AddCommand(SetMinimumAssertionPeriodCmd)
+	SetCmd.AddCommand(SetConfirmPeriodBlocksCmd)
+	SetCmd.AddCommand(SetMaxTimeVariationCmd)
 }

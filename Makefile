@@ -8,11 +8,13 @@ clean :
 .make/yarndeps: nitro-contracts/package.json nitro-contracts/yarn.lock .make
 	yarn --cwd nitro-contracts install
 	yarn --cwd token-bridge-contracts install
+	yarn --cwd upgrade-executor install
 	@touch $@
 
 .make/solidity: nitro-contracts/src/*/*.sol .make/yarndeps .make
 	yarn --cwd nitro-contracts build
 	yarn --cwd token-bridge-contracts build
+	yarn --cwd upgrade-executor prepublishOnly
 	@touch $@
 	
 .make/solgen: solgen/gen.go .make/solidity .make

@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -15,10 +16,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// maxTimeVariationCmd represents the maxTimeVariation command
-var MaxTimeVariationCmd = &cobra.Command{
-	Use:   "MaxTimeVariation",
+// RBlockPeriodCmd represents the RBlockPeriod command
+var RBlockPeriodCmd = &cobra.Command{
+	Use:   "RBlockPeriod",
 	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
 		if err != nil {
@@ -45,7 +52,7 @@ var MaxTimeVariationCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		sequencerInbox, err := network.NewSequencerInbox(parentClient)
+		RollupCore, err := network.NewRollupCore(parentClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,15 +61,17 @@ var MaxTimeVariationCmd = &cobra.Command{
 			Pending: false,
 			Context: nil,
 		}
-		delayBlocks, futureBlocks, delaySeconds, futureSeconds, err := sequencerInbox.SequencerInboxCaller.MaxTimeVariation(Callopts)
+		minimumAssertionPeriod, err := RollupCore.RollupCoreCaller.MinimumAssertionPeriod(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		maxTimeVariation := arbnetwork.MaxTimeVariation{
-			DelayBlocks:   delayBlocks,
-			FutureBlocks:  futureBlocks,
-			DelaySeconds:  delaySeconds,
-			FutureSeconds: futureSeconds,
+		confirmPeriodBlocks, err := RollupCore.RollupCoreCaller.ConfirmPeriodBlocks(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		maxTimeVariation := arbnetwork.RBlockPeriod{
+			MinimumAssertionPeriod: minimumAssertionPeriod,
+			ConfirmPeriodBlocks:    big.NewInt(int64(confirmPeriodBlocks)),
 		}
 		logs.PrintFromatter(utils.ConvertBytesToHex(maxTimeVariation))
 	},

@@ -40,3 +40,8 @@ type MaxTimeVariation struct {
 	DelaySeconds  *big.Int
 	FutureSeconds *big.Int
 }
+
+type RBlockPeriod struct {
+	MinimumAssertionPeriod *big.Int
+	ConfirmPeriodBlocks    *big.Int
+}

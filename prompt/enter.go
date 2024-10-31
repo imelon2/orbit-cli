@@ -75,7 +75,7 @@ func EnterBytes() (string, error) {
 }
 
 func EnterInt(max int, name string) (*int, error) {
-	msg := "Enter " + name + " count: "
+	msg := "Enter " + name + ": "
 	if max != 0 {
 		msg += fmt.Sprintf("(max : %d)", max)
 	}
@@ -92,7 +92,7 @@ func EnterInt(max int, name string) (*int, error) {
 				}
 
 				// 입력값이 max보다 큰지 확인
-				if inputInt > max {
+				if max != 0 && inputInt > max {
 					return errors.New("number too large")
 				}
 				return nil

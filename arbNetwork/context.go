@@ -116,6 +116,14 @@ func (network NetworkInfo) NewRollupCore(parentClient *ethclient.Client) (*rollu
 	return rollupgen.NewRollupCore(network.EthBridge.Rollup, parentClient)
 }
 
+func (network NetworkInfo) NewRollupAdminLogic(parentClient *ethclient.Client) (*rollupgen.RollupAdminLogic, error) {
+	return rollupgen.NewRollupAdminLogic(network.EthBridge.Rollup, parentClient)
+}
+
+func (network NetworkInfo) NewUpgradeExecutor(parentClient *ethclient.Client) (*UpgradeExecutor, error) {
+	return NewUpgradeExecutor(network, parentClient)
+}
+
 func (network NetworkInfo) NewBridge(parentClient *ethclient.Client) (*bridgegen.Bridge, error) {
 	return bridgegen.NewBridge(network.EthBridge.Bridge, parentClient)
 }

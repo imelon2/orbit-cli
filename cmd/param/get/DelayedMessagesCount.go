@@ -15,10 +15,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// maxTimeVariationCmd represents the maxTimeVariation command
-var MaxTimeVariationCmd = &cobra.Command{
-	Use:   "MaxTimeVariation",
+// TotalDelayedMessagesReadCmd represents the TotalDelayedMessagesRead command
+var DelayedMessagesCountCmd = &cobra.Command{
+	Use:   "DelayedMessagesCount",
 	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
 		if err != nil {
@@ -50,20 +56,29 @@ var MaxTimeVariationCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		bridge, err := network.NewBridge(parentClient)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		Callopts := &bind.CallOpts{
 			Pending: false,
 			Context: nil,
 		}
-		delayBlocks, futureBlocks, delaySeconds, futureSeconds, err := sequencerInbox.SequencerInboxCaller.MaxTimeVariation(Callopts)
+
+		TotalDelayedMessages, err := sequencerInbox.SequencerInboxCaller.TotalDelayedMessagesRead(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		maxTimeVariation := arbnetwork.MaxTimeVariation{
-			DelayBlocks:   delayBlocks,
-			FutureBlocks:  futureBlocks,
-			DelaySeconds:  delaySeconds,
-			FutureSeconds: futureSeconds,
+
+		DelayedMessageCount, err := bridge.BridgeCaller.DelayedMessageCount(Callopts)
+		if err != nil {
+			log.Fatal(err)
 		}
-		logs.PrintFromatter(utils.ConvertBytesToHex(maxTimeVariation))
+
+		logs.PrintFromatter(utils.ConvertBytesToHex(map[string]interface{}{
+			"TotalDelayedMessages": TotalDelayedMessages,
+			"DelayedMessageCount":  DelayedMessageCount,
+		}))
 	},
 }

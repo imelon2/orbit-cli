@@ -38,4 +38,5 @@ func init() {
 	GetCmd.AddCommand(MaxTimeVariationCmd)
 	GetCmd.AddCommand(RBlockPeriodCmd)
 	GetCmd.AddCommand(DelayedMessagesCountCmd)
+	GetCmd.AddCommand(SequencerMessageCountCmd)
 }

@@ -38,4 +38,5 @@ func init() {
 	SetCmd.AddCommand(SetMinimumAssertionPeriodCmd)
 	SetCmd.AddCommand(SetConfirmPeriodBlocksCmd)
 	SetCmd.AddCommand(SetMaxTimeVariationCmd)
+	SetCmd.AddCommand(SetNetworkFeeAccountCmd)
 }

@@ -39,4 +39,5 @@ func init() {
 	GetCmd.AddCommand(RBlockPeriodCmd)
 	GetCmd.AddCommand(DelayedMessagesCountCmd)
 	GetCmd.AddCommand(SequencerMessageCountCmd)
+	GetCmd.AddCommand(NetworkAccountCmd)
 }

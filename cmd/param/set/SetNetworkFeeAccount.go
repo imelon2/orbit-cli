@@ -9,17 +9,19 @@ import (
 	"log"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	arbnetwork "github.com/imelon2/orbit-cli/arbNetwork"
 	"github.com/imelon2/orbit-cli/common/logs"
 	"github.com/imelon2/orbit-cli/common/tx"
 	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
 	"github.com/spf13/cobra"
 )
 
-// SetConfirmPeriodBlocksCmd represents the SetConfirmPeriodBlocks command
-var SetConfirmPeriodBlocksCmd = &cobra.Command{
-	Use:   "SetConfirmPeriodBlocks",
+// SetNetworkFeeAccountCmd represents the SetNetworkFeeAccount command
+var SetNetworkFeeAccountCmd = &cobra.Command{
+	Use:   "SetNetworkFeeAccount",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
@@ -27,12 +29,7 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		parent, child, err := prompt.SelectCrossChainProviders(chains)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		parentClient, err := ethclient.Dial(parent)
+		_, child, err := prompt.SelectCrossChainProviders(chains)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -47,16 +44,12 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		auto, err := tx.GetAuthByKeystore(ks, *account, parentClient)
+		auth, err := tx.GetAuthByKeystore(ks, *account, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		network, err := arbnetwork.GetNetworkInfo(childClient)
-		if err != nil {
-			log.Fatal(err)
-		}
-		UpgradeExecutor, err := network.NewUpgradeExecutor(parentClient)
+		ArbOwnerPublic, err := precompilesgen.NewArbOwnerPublic(types.ArbOwnerPublicAddress, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,22 +58,27 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			Pending: false,
 			Context: nil,
 		}
-		confirmPeriodBlocks, err := UpgradeExecutor.RollupUserLogic.ConfirmPeriodBlocks(Callopts)
+		NetworkFeeAccount, err := ArbOwnerPublic.GetNetworkFeeAccount(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		newConfirmPeriod, err := prompt.EnterInt(0, fmt.Sprintf("new ConfirmPeriodBlocks(block) "+logs.GrayString("(current value: %d)"), confirmPeriodBlocks))
+		newNetworkFeeAccount, err := prompt.EnterAddress(fmt.Sprintf("enter new Network Fee Account "+logs.GrayString("(current address: %s)"), NetworkFeeAccount.Hex()))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		response, err := UpgradeExecutor.SetConfirmPeriodBlocks(auto, uint64(*newConfirmPeriod))
+		ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		receipt, err := bind.WaitMined(context.Background(), parentClient, response)
+		response, err := ArbOwner.SetNetworkFeeAccount(auth, common.HexToAddress(*newNetworkFeeAccount))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		receipt, err := bind.WaitMined(context.Background(), childClient, response)
 		if err != nil {
 			log.Fatal(err)
 		}

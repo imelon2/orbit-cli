@@ -110,6 +110,29 @@ func EnterInt(max int, name string) (*int, error) {
 	return &selected, nil
 }
 
+func EnterAddress(msg string) (*string, error) {
+	validationQs := []*survey.Question{
+		{
+			Prompt: &survey.Input{Message: msg},
+			Validate: func(val interface{}) error {
+				if str := val.(string); !utils.IsAddress(str) {
+					return errors.New("invalid address")
+				}
+				return nil
+			},
+		},
+	}
+
+	var selected string
+	err := survey.Ask(validationQs, &selected)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed enter address: %v", err)
+	}
+
+	return &selected, nil
+}
+
 func EnterPassword() (string, error) {
 	var passwordQs = &survey.Password{Message: "Enter the password [for skip <ENTER>] : "}
 

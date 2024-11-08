@@ -5,26 +5,35 @@ package cmd
 
 import (
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	arbnetwork "github.com/imelon2/orbit-cli/arbNetwork"
 	"github.com/imelon2/orbit-cli/common/logs"
-	"github.com/imelon2/orbit-cli/common/utils"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
 )
 
-// TotalDelayedMessagesReadCmd represents the TotalDelayedMessagesRead command
-var DelayedMessagesCountCmd = &cobra.Command{
-	Use:   "DelayedMessagesCount",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+type MessageCountLog struct {
+	DelayedMessage   DelayedMessageCountLog
+	SequencerMessage SequencerMessageCountLog
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+type DelayedMessageCountLog struct {
+	TotalDelayedMessages *big.Int
+	DelayedMessageCount  *big.Int
+}
+
+type SequencerMessageCountLog struct {
+	SequencerMessageCount            *big.Int
+	SequencerReportedSubMessageCount *big.Int
+}
+
+// MessageCountCmd represents the MessageCount command
+var MessageCountCmd = &cobra.Command{
+	Use:   "MessageCount",
+	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
 		if err != nil {
@@ -66,19 +75,33 @@ to quickly create a Cobra application.`,
 			Context: nil,
 		}
 
-		TotalDelayedMessages, err := sequencerInbox.SequencerInboxCaller.TotalDelayedMessagesRead(Callopts)
+		TotalDelayedMessages, err := sequencerInbox.TotalDelayedMessagesRead(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		DelayedMessageCount, err := bridge.DelayedMessageCount(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		SequencerMessageCount, err := bridge.SequencerMessageCount(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		sequencerReportedSubMessageCount, err := bridge.SequencerReportedSubMessageCount(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		DelayedMessageCount, err := bridge.BridgeCaller.DelayedMessageCount(Callopts)
-		if err != nil {
-			log.Fatal(err)
-		}
+		logs.PrintFromatter(MessageCountLog{
+			DelayedMessageCountLog{
+				TotalDelayedMessages: TotalDelayedMessages,
+				DelayedMessageCount:  DelayedMessageCount,
+			},
+			SequencerMessageCountLog{
+				SequencerMessageCount:            SequencerMessageCount,
+				SequencerReportedSubMessageCount: sequencerReportedSubMessageCount,
+			},
+		})
 
-		logs.PrintFromatter(utils.ConvertBytesToHex(map[string]interface{}{
-			"TotalDelayedMessages": TotalDelayedMessages,
-			"DelayedMessageCount":  DelayedMessageCount,
-		}))
 	},
 }

@@ -37,7 +37,6 @@ var GetCmd = &cobra.Command{
 func init() {
 	GetCmd.AddCommand(MaxTimeVariationCmd)
 	GetCmd.AddCommand(RBlockPeriodCmd)
-	GetCmd.AddCommand(DelayedMessagesCountCmd)
-	GetCmd.AddCommand(SequencerMessageCountCmd)
 	GetCmd.AddCommand(NetworkAccountCmd)
+	GetCmd.AddCommand(MessageCountCmd)
 }

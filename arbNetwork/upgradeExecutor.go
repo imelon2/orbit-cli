@@ -16,6 +16,7 @@ type UpgradeExecutor struct {
 	RollupAdminLogic *rollupgen.RollupAdminLogic
 	RollupUserLogic  *rollupgen.RollupUserLogic
 	SequencerInbox   *bridgegen.SequencerInbox
+	Bridge           *bridgegen.Bridge
 }
 
 func NewUpgradeExecutor(network NetworkInfo, client *ethclient.Client) (*UpgradeExecutor, error) {
@@ -31,6 +32,11 @@ func NewUpgradeExecutor(network NetworkInfo, client *ethclient.Client) (*Upgrade
 	if err != nil {
 		return nil, err
 	}
+	bridge, err := bridgegen.NewBridge(network.EthBridge.Bridge, client)
+	if err != nil {
+		return nil, err
+	}
+
 	Callopts := &bind.CallOpts{
 		Pending: false,
 		Context: nil,
@@ -48,6 +54,7 @@ func NewUpgradeExecutor(network NetworkInfo, client *ethclient.Client) (*Upgrade
 		RollupAdminLogic: rollupAdminLogic,
 		RollupUserLogic:  rollupUserLogic,
 		SequencerInbox:   sequencerInbox,
+		Bridge:           bridge,
 	}, nil
 }
 
@@ -85,6 +92,19 @@ func (wallet UpgradeExecutor) SetMaxTimeVariation(opts *bind.TransactOpts, maxTi
 	}
 	simulation(1) // 1 for skip estimate gas
 	txRes, _ := wallet.SequencerInbox.SetMaxTimeVariation(opts, maxTimeVariation)
+	simulation(cacheGas)
+
+	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())
+}
+
+func (wallet UpgradeExecutor) SetSequencerReportedSubMessageCount(opts *bind.TransactOpts, newMsgCount *big.Int) (*types.Transaction, error) {
+	cacheGas := opts.GasLimit
+	simulation := func(gasLimit uint64) {
+		opts.NoSend = !opts.NoSend
+		opts.GasLimit = gasLimit
+	}
+	simulation(1) // 1 for skip estimate gas
+	txRes, _ := wallet.Bridge.SetSequencerReportedSubMessageCount(opts, newMsgCount)
 	simulation(cacheGas)
 
 	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())

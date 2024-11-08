@@ -39,4 +39,5 @@ func init() {
 	SetCmd.AddCommand(SetConfirmPeriodBlocksCmd)
 	SetCmd.AddCommand(SetMaxTimeVariationCmd)
 	SetCmd.AddCommand(SetNetworkFeeAccountCmd)
+	SetCmd.AddCommand(SetSequencerReportedSubMessageCountCmd)
 }

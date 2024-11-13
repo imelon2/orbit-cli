@@ -166,7 +166,6 @@ func SelectWalletForSign() (*accounts.Wallet, *keystore.KeyStore, *accounts.Acco
 			Keystore: ks,
 		})
 	}
-
 	var addressList []string
 	for _, wallet := range KeystoreList {
 		accounts := wallet.Keystore.Accounts()
@@ -192,7 +191,7 @@ func SelectWalletForSign() (*accounts.Wallet, *keystore.KeyStore, *accounts.Acco
 
 	ks := KeystoreList[answerIndex].Keystore
 	account := ks.Accounts()
-	err = ks.Unlock(account[answerIndex], pw)
+	err = ks.Unlock(account[0], pw)
 
 	if err == keystore.ErrDecrypt {
 		var validationQs = []*survey.Question{
@@ -215,7 +214,7 @@ func SelectWalletForSign() (*accounts.Wallet, *keystore.KeyStore, *accounts.Acco
 		return nil, nil, nil, fmt.Errorf("failed select wallet for sign: %v", err)
 	}
 
-	wallet = ks.Wallets()[answerIndex]
+	wallet = ks.Wallets()[0]
 
-	return &wallet, ks, &account[answerIndex], nil
+	return &wallet, ks, &account[0], nil
 }

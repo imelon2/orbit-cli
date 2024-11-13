@@ -7,19 +7,21 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	arbnetwork "github.com/imelon2/orbit-cli/arbNetwork"
 	"github.com/imelon2/orbit-cli/common/logs"
 	"github.com/imelon2/orbit-cli/common/tx"
 	"github.com/imelon2/orbit-cli/prompt"
+	"github.com/imelon2/orbit-cli/solgen/go/precompilesgen"
 	"github.com/spf13/cobra"
 )
 
-// SetConfirmPeriodBlocksCmd represents the SetConfirmPeriodBlocks command
-var SetConfirmPeriodBlocksCmd = &cobra.Command{
-	Use:   "SetConfirmPeriodBlocks",
+// SetL1PricePerUnitCmd represents the SetL1PricePerUnit command
+var SetL1PricePerUnitCmd = &cobra.Command{
+	Use:   "SetL1PricePerUnit",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		chains, err := prompt.SelectChains()
@@ -27,12 +29,7 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		parent, child, err := prompt.SelectCrossChainProviders(chains)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		parentClient, err := ethclient.Dial(parent)
+		_, child, err := prompt.SelectCrossChainProviders(chains)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -47,16 +44,12 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		auto, err := tx.GetAuthByKeystore(ks, *account, parentClient)
+		auth, err := tx.GetAuthByKeystore(ks, *account, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		network, err := arbnetwork.GetNetworkInfo(childClient)
-		if err != nil {
-			log.Fatal(err)
-		}
-		UpgradeExecutor, err := network.NewUpgradeExecutor(parentClient)
+		ArbGasInfo, err := precompilesgen.NewArbGasInfo(types.ArbGasInfoAddress, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -65,22 +58,26 @@ var SetConfirmPeriodBlocksCmd = &cobra.Command{
 			Pending: false,
 			Context: nil,
 		}
-		confirmPeriodBlocks, err := UpgradeExecutor.RollupUserLogic.ConfirmPeriodBlocks(Callopts)
+		currentPricePerUnit, err := ArbGasInfo.GetL1BaseFeeEstimate(Callopts)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		newConfirmPeriod, err := prompt.EnterInt(0, fmt.Sprintf("new ConfirmPeriodBlocks "+logs.GrayString("(current value: %d)"), confirmPeriodBlocks))
+		pricePerUnit, err := prompt.EnterInt(0, fmt.Sprintf("enter new pricePerUnit "+logs.GrayString("(current: %d)"), currentPricePerUnit))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		response, err := UpgradeExecutor.SetConfirmPeriodBlocks(auto, uint64(*newConfirmPeriod))
+		ArbOwner, err := precompilesgen.NewArbOwner(types.ArbOwnerAddress, childClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		receipt, err := bind.WaitMined(context.Background(), parentClient, response)
+		response, err := ArbOwner.SetL1PricePerUnit(auth, big.NewInt(int64(*pricePerUnit)))
+		if err != nil {
+			log.Fatal(err)
+		}
+		receipt, err := bind.WaitMined(context.Background(), childClient, response)
 		if err != nil {
 			log.Fatal(err)
 		}

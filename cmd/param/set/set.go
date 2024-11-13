@@ -40,4 +40,5 @@ func init() {
 	SetCmd.AddCommand(SetMaxTimeVariationCmd)
 	SetCmd.AddCommand(SetNetworkFeeAccountCmd)
 	SetCmd.AddCommand(SetSequencerReportedSubMessageCountCmd)
+	SetCmd.AddCommand(SetL1PricePerUnitCmd)
 }

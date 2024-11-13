@@ -33,6 +33,6 @@ func GetAuthByKeystore(ks *keystore.KeyStore, account accounts.Account, client *
 		return nil, fmt.Errorf("failed SuggestGasPrice %v", err)
 	}
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.GasPrice = gasPrice
+	auth.GasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
 	return auth, nil
 }

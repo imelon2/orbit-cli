@@ -26,7 +26,7 @@ func GetContractNetworkDir() string {
 	root := filepath.Dir(filename)
 	depth1 := filepath.Dir(root)
 	depth2 := filepath.Dir(depth1)
-	networkPath := filepath.Join(depth2, "arbNetwork", "networks")
+	networkPath := filepath.Join(depth2, "networks")
 	return networkPath
 }
 

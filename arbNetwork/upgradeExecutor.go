@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/imelon2/orbit-cli/solgen/go/bridgegen"
@@ -92,6 +93,19 @@ func (wallet UpgradeExecutor) SetMaxTimeVariation(opts *bind.TransactOpts, maxTi
 	}
 	simulation(1) // 1 for skip estimate gas
 	txRes, _ := wallet.SequencerInbox.SetMaxTimeVariation(opts, maxTimeVariation)
+	simulation(cacheGas)
+
+	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())
+}
+
+func (wallet UpgradeExecutor) SetIsBatchPoster(opts *bind.TransactOpts, addr common.Address, isBatchPoster_ bool) (*types.Transaction, error) {
+	cacheGas := opts.GasLimit
+	simulation := func(gasLimit uint64) {
+		opts.NoSend = !opts.NoSend
+		opts.GasLimit = gasLimit
+	}
+	simulation(1) // 1 for skip estimate gas
+	txRes, _ := wallet.SequencerInbox.SetIsBatchPoster(opts, addr, isBatchPoster_)
 	simulation(cacheGas)
 
 	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())

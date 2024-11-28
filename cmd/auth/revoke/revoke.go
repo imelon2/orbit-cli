@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// parseCmd represents the parse command
-var ParseCmd = &cobra.Command{
-	Use:   "parse",
+// revokeCmd represents the revoke command
+var RevokeCmd = &cobra.Command{
+	Use:   "revoke",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -32,7 +32,5 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	ParseCmd.AddCommand(CalldataCmd)
-	ParseCmd.AddCommand(EventCmd)
-	ParseCmd.AddCommand(ErrorCmd)
+	RevokeCmd.AddCommand(BatchPosterCmd)
 }

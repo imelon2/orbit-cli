@@ -21,22 +21,12 @@ var GetCmd = &cobra.Command{
 			log.Fatal("bad path")
 		}
 
-		cmdName, err := prompt.SelectNextCmd(filename)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		nextCmd, _, err := cmd.Find([]string{cmdName})
-		if err != nil {
-			log.Fatal(err)
-		}
-		nextCmd.Run(nextCmd, args)
+		prompt.RootCmdNavigation(filename, cmd, args)
 	},
 }
 
 func init() {
 	GetCmd.AddCommand(MaxTimeVariationCmd)
 	GetCmd.AddCommand(RBlockPeriodCmd)
-	GetCmd.AddCommand(NetworkAccountCmd)
 	GetCmd.AddCommand(MessageCountCmd)
 }

@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// parseCmd represents the parse command
-var ParseCmd = &cobra.Command{
-	Use:   "parse",
+// grantCmd represents the grant command
+var GrantCmd = &cobra.Command{
+	Use:   "grant",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -26,13 +26,11 @@ to quickly create a Cobra application.`,
 		if !ok {
 			log.Fatal("bad path")
 		}
-
 		prompt.RootCmdNavigation(filename, cmd, args)
 	},
 }
 
 func init() {
-	ParseCmd.AddCommand(CalldataCmd)
-	ParseCmd.AddCommand(EventCmd)
-	ParseCmd.AddCommand(ErrorCmd)
+	GrantCmd.AddCommand(BatchPosterCmd)
+	GrantCmd.AddCommand(SetNetworkFeeAccountCmd)
 }

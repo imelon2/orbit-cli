@@ -39,4 +39,5 @@ func init() {
 	GetCmd.AddCommand(RBlockPeriodCmd)
 	GetCmd.AddCommand(NetworkAccountCmd)
 	GetCmd.AddCommand(MessageCountCmd)
+	GetCmd.AddCommand(MaxDataSizeCmd)
 }

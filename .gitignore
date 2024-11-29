@@ -9,6 +9,6 @@ config.yml
 
 keystore/*
 
-arbNetwork/networks/*
-!arbNetwork/networks/arbitrum-one.json
-!arbNetwork/networks/arbitrum-sepolia.json
+networks/*
+!networks/arbitrum-one.json
+!networks/arbitrum-sepolia.json

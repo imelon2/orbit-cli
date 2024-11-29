@@ -7,13 +7,16 @@ import (
 	"log"
 	"runtime"
 
+	grant "github.com/imelon2/orbit-cli/cmd/auth/grant"
+	query "github.com/imelon2/orbit-cli/cmd/auth/query"
+	revoke "github.com/imelon2/orbit-cli/cmd/auth/revoke"
 	"github.com/imelon2/orbit-cli/prompt"
 	"github.com/spf13/cobra"
 )
 
-// parseCmd represents the parse command
-var ParseCmd = &cobra.Command{
-	Use:   "parse",
+// authCmd represents the auth command
+var AuthCmd = &cobra.Command{
+	Use:   "auth",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -32,7 +35,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	ParseCmd.AddCommand(CalldataCmd)
-	ParseCmd.AddCommand(EventCmd)
-	ParseCmd.AddCommand(ErrorCmd)
+	AuthCmd.AddCommand(grant.GrantCmd)
+	AuthCmd.AddCommand(query.QueryCmd)
+	AuthCmd.AddCommand(revoke.RevokeCmd)
 }

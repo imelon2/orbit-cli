@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	account "github.com/imelon2/orbit-cli/cmd/account"
+	auth "github.com/imelon2/orbit-cli/cmd/auth"
 	param "github.com/imelon2/orbit-cli/cmd/param"
 	parse "github.com/imelon2/orbit-cli/cmd/parse"
 	search "github.com/imelon2/orbit-cli/cmd/search"
@@ -28,16 +29,7 @@ var rootCmd = &cobra.Command{
 			log.Fatal("bad path")
 		}
 
-		cmdName, err := prompt.SelectNextCmd(filename)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		nextCmd, _, err := cmd.Find([]string{cmdName})
-		if err != nil {
-			log.Fatal(err)
-		}
-		nextCmd.Run(nextCmd, args)
+		prompt.RootCmdNavigation(filename, cmd, args)
 	},
 }
 
@@ -53,6 +45,7 @@ func init() {
 	rootCmd.AddCommand(search.SearchCmd)
 	rootCmd.AddCommand(param.ParamCmd)
 	rootCmd.AddCommand(account.AccountCmd)
+	rootCmd.AddCommand(auth.AuthCmd)
 
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 	configPath := path.GetConfigPath()

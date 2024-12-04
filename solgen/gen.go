@@ -63,6 +63,7 @@ func main() {
 		filepath.Join(parent, "canonical-weth", "build", "contracts", "WETH9.json"),
 		filepath.Join(parent, "nitro-contracts", "build", "contracts", "@openzeppelin", "contracts", "token", "ERC20", "ERC20.sol", "ERC20.json"),
 		filepath.Join(parent, "upgrade-executor", "build", "contracts", "src", "*.sol", "*.json"),
+		filepath.Join(parent, "l1-l3-teleport-contracts", "build", "contracts", "contracts", "*.sol", "*.json"),
 	}
 
 	var filePathsTokenBridgeContract []string

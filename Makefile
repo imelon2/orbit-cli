@@ -9,12 +9,14 @@ clean :
 	yarn --cwd nitro-contracts install
 	yarn --cwd token-bridge-contracts install
 	yarn --cwd upgrade-executor install
+	yarn --cwd l1-l3-teleport-contracts install
 	@touch $@
 
 .make/solidity: nitro-contracts/src/*/*.sol .make/yarndeps .make
 	yarn --cwd nitro-contracts build
 	yarn --cwd token-bridge-contracts build
 	yarn --cwd upgrade-executor prepublishOnly
+	yarn --cwd l1-l3-teleport-contracts prepublishOnly
 	@touch $@
 	
 .make/solgen: solgen/gen.go .make/solidity .make

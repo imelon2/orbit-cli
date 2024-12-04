@@ -42,6 +42,7 @@ type MaxTimeVariation struct {
 }
 
 type RBlockPeriod struct {
-	MinimumAssertionPeriod *big.Int
-	ConfirmPeriodBlocks    *big.Int
+	MinimumAssertionPeriod   *big.Int
+	ConfirmPeriodBlocks      *big.Int
+	ExtraChallengeTimeBlocks *uint64
 }

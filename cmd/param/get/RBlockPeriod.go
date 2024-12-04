@@ -69,9 +69,14 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
+		extraChallengeTimeBlocks, err := RollupCore.RollupCoreCaller.ExtraChallengeTimeBlocks(Callopts)
+		if err != nil {
+			log.Fatal(err)
+		}
 		maxTimeVariation := arbnetwork.RBlockPeriod{
-			MinimumAssertionPeriod: minimumAssertionPeriod,
-			ConfirmPeriodBlocks:    big.NewInt(int64(confirmPeriodBlocks)),
+			MinimumAssertionPeriod:   minimumAssertionPeriod,
+			ConfirmPeriodBlocks:      big.NewInt(int64(confirmPeriodBlocks)),
+			ExtraChallengeTimeBlocks: &extraChallengeTimeBlocks,
 		}
 		logs.PrintFromatter(utils.ConvertBytesToHex(maxTimeVariation))
 	},

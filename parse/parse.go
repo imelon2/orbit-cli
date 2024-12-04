@@ -130,7 +130,7 @@ func (parse *Parse) ParseError(rpcErr rpc.DataError) (*ErrorDataLog, error) {
 	system := rpcErr.Error() // system error
 	sError, ok := rpcErr.ErrorData().(string)
 	if !ok {
-		return nil, fmt.Errorf("failed convert error data to string")
+		return nil, fmt.Errorf("failed convert error data to string: %s", system)
 	}
 	sError = utils.Unhexlify(sError)
 

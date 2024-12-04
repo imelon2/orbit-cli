@@ -14,3 +14,6 @@
 	path = nitro-contracts
 	url = https://github.com/OffchainLabs/nitro-contracts.git
 	branch = develop
+[submodule "l1-l3-teleport-contracts"]
+	path = l1-l3-teleport-contracts
+	url = https://github.com/OffchainLabs/l1-l3-teleport-contracts.git

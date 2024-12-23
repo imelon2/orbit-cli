@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	MAX_EVENT_BLOCK = uint64(5000)
+	MAX_EVENT_BLOCK = uint64(100000)
 )
 
 type TxLib struct {

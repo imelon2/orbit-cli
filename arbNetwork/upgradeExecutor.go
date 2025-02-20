@@ -123,3 +123,29 @@ func (wallet UpgradeExecutor) SetSequencerReportedSubMessageCount(opts *bind.Tra
 
 	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())
 }
+
+func (wallet UpgradeExecutor) SetValidKeyset(opts *bind.TransactOpts, keysetBytes []byte) (*types.Transaction, error) {
+	cacheGas := opts.GasLimit
+	simulation := func(gasLimit uint64) {
+		opts.NoSend = !opts.NoSend
+		opts.GasLimit = gasLimit
+	}
+	simulation(1) // 1 for skip estimate gas
+	txRes, _ := wallet.SequencerInbox.SetValidKeyset(opts, keysetBytes)
+	simulation(cacheGas)
+
+	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())
+}
+
+func (wallet UpgradeExecutor) InvalidateKeysetHash(opts *bind.TransactOpts, ksHash [32]byte) (*types.Transaction, error) {
+	cacheGas := opts.GasLimit
+	simulation := func(gasLimit uint64) {
+		opts.NoSend = !opts.NoSend
+		opts.GasLimit = gasLimit
+	}
+	simulation(1) // 1 for skip estimate gas
+	txRes, _ := wallet.SequencerInbox.InvalidateKeysetHash(opts, ksHash)
+	simulation(cacheGas)
+
+	return wallet.UpgradeExecutor.ExecuteCall(opts, *txRes.To(), txRes.Data())
+}

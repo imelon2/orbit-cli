@@ -74,6 +74,36 @@ func EnterBytes() (string, error) {
 	return selected, nil
 }
 
+func EnterBytes32() (string, error) {
+	validationQs := []*survey.Question{
+		{
+
+			Prompt: &survey.Input{Message: "Enter bytes32 data: "},
+			Validate: func(val interface{}) error {
+				// if the input matches the expectation
+				if str := val.(string); !utils.IsBytes(str) {
+					return errors.New("invalid bytes")
+				}
+
+				if str := val.(string); len(str) > 66 /* include 0x */ {
+					return errors.New("data exceeds 32 bytes")
+				}
+				// nothing was wrong
+				return nil
+			},
+		},
+	}
+
+	var selected string
+	err := survey.Ask(validationQs, &selected)
+
+	if err != nil {
+		return "", fmt.Errorf("failed enter bytes: %v", err)
+	}
+
+	return selected, nil
+}
+
 func EnterInt(max int, name string) (*int, error) {
 	msg := "Enter " + name + ": "
 	if max != 0 {

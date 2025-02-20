@@ -15,9 +15,9 @@ func IsTransactionHash(addr string) bool {
 	return re.MatchString(addr)
 }
 
-func IsBytes(addr string) bool {
+func IsBytes(bytes string) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]")
-	return re.MatchString(addr)
+	return re.MatchString(bytes)
 }
 
 func IsPrivateKey(addr string) bool {

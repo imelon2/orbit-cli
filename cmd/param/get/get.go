@@ -30,4 +30,5 @@ func init() {
 	GetCmd.AddCommand(RBlockPeriodCmd)
 	GetCmd.AddCommand(MessageCountCmd)
 	GetCmd.AddCommand(MaxDataSizeCmd)
+	GetCmd.AddCommand(IsValidKeysetHashCmd)
 }

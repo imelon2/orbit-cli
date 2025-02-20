@@ -31,4 +31,6 @@ func init() {
 	SetCmd.AddCommand(SetMaxTimeVariationCmd)
 	SetCmd.AddCommand(SetSequencerReportedSubMessageCountCmd)
 	SetCmd.AddCommand(SetL1PricePerUnitCmd)
+	SetCmd.AddCommand(SetValidKeysetCmd)
+	SetCmd.AddCommand(InvalidateKeysetHashCmd)
 }
